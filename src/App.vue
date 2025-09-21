@@ -9,12 +9,13 @@ const authStore = useAuthStore()
 
 // Инициализируем авторизацию когда приложение готово
 onMounted(async () => {
+  console.log('initData', webApp.value?.initData)
+  
   if (isReady.value) {
     await authStore.initialize()
     
     // Если есть Telegram WebApp с initData, но нет авторизации в Supabase
     if (webApp.value?.initData && !authStore.isAuthenticated) {
-      console.log('initData', webApp.value.initData)
       const result = await authStore.signInWithTelegram(webApp.value.initData)
       
       if (result.success) {
