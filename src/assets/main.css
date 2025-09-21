@@ -1,0 +1,51 @@
+@import './base.css';
+@import "tailwindcss";
+
+@theme {
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Telegram Mini App specific styles */
+:root {
+  --tg-bg-color: #ffffff;
+  --tg-text-color: #000000;
+  --tg-hint-color: #999999;
+  --tg-link-color: #2481cc;
+  --tg-button-color: #2481cc;
+  --tg-button-text-color: #ffffff;
+  --tg-secondary-bg-color: #f1f1f1;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--tg-bg-color);
+  color: var(--tg-text-color);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* Ensure proper touch targets for mobile */
+button, [role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
