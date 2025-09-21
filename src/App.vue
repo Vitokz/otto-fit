@@ -14,6 +14,7 @@ onMounted(async () => {
     
     // Если есть Telegram WebApp с initData, но нет авторизации в Supabase
     if (webApp.value?.initData && !authStore.isAuthenticated) {
+      console.log('initData', webApp.value.initData)
       const result = await authStore.signInWithTelegram(webApp.value.initData)
       
       if (result.success) {

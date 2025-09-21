@@ -29,5 +29,8 @@ coverage
 
 *.tsbuildinfo
 
+*.env*
+supabase/functions/telegram-auth/.env
+
 test-results/
 playwright-report/

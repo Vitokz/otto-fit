@@ -1,25 +1,9 @@
-import { serve } from "@std/http"
-import { createClient } from '@supabase/supabase-js'
+// Follow this setup guide to integrate the Deno language server with your editor:
+// https://deno.land/manual/getting_started/setup_your_environment
+// This enables autocomplete, go to definition, etc.
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-interface TelegramUser {
-  id: number
-  first_name: string
-  last_name?: string
-  username?: string
-  language_code?: string
-  is_premium?: boolean
-}
-
-interface TelegramInitData {
-  user: TelegramUser
-  auth_date: number
-  hash: string
-}
+// Setup type definitions for built-in Supabase Runtime APIs
+import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 
 async function verifyTelegramInitData(initData: string, botToken: string): Promise<boolean> {
   try {
@@ -86,7 +70,7 @@ function isInitDataFresh(authDate: number): boolean {
   return (now - authDate) <= maxAge
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -231,3 +215,15 @@ serve(async (req) => {
     )
   }
 })
+
+/* To invoke locally:
+
+  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
+  2. Make an HTTP request:
+
+  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/telegram-auth-2' \
+    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
+    --header 'Content-Type: application/json' \
+    --data '{"name":"Functions"}'
+
+*/
