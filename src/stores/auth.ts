@@ -35,7 +35,6 @@ export const useAuthStore = defineStore('auth', () => {
             
             return { 
                 success: true, 
-                isNewUser: !profile.value,
                 user
             }
         } catch (error: any) {

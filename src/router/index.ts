@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import AuthSuccessView from '../views/AuthSuccessView.vue'
 import UserDataForm from '../components/UserDataForm.vue'
+import WelcomeScreen from '../components/WelcomeScreen.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +18,12 @@ const router = createRouter({
       path: '/auth-success',
       name: 'auth-success',
       component: AuthSuccessView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/welcome',
+      name: 'welcome',
+      component: WelcomeScreen,
       meta: { requiresAuth: true }
     },
     {
@@ -49,13 +56,13 @@ router.beforeEach(async (to, from, next) => {
 
   if (requiresCompleteProfile && authStore.isAuthenticated) {
     // Проверяем заполненность профиля через computed свойство из store
-    if (!authStore.hasCompleteProfile && to.name !== 'user-data') {
-      next({ name: 'user-data' })
+    if (!authStore.hasCompleteProfile && to.name !== 'user-data' && to.name !== 'welcome') {
+      next({ name: 'welcome' })
       return
     }
     
-    // Если профиль завершен, но пользователь на странице заполнения данных
-    if (authStore.hasCompleteProfile && to.name === 'user-data') {
+    // Если профиль завершен, но пользователь на welcome или user-data странице
+    if (authStore.hasCompleteProfile && (to.name === 'user-data' || to.name === 'welcome')) {
       next({ name: 'home' })
       return
     }

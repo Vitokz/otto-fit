@@ -19,11 +19,6 @@ onMounted(async () => {
       
       if (result.success) {
         console.log('Telegram user authenticated:', user.value.id)
-        
-        // Если это первая авторизация, показываем страницу успеха
-        if (result.isNewUser) {
-          router.push('/auth-success')
-        }
       } else {
         console.error('Failed to authenticate with Telegram:', result.error)
       }
