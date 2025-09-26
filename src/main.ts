@@ -7,7 +7,11 @@ import App from './App.vue'
 import router from './router'
 
 if (import.meta.env.DEV || window.location.search.includes('debug=true')) {
-  import('eruda').then(eruda => eruda.default.init())
+  console.log('Loading Eruda...')
+  import('eruda').then(eruda => {
+    eruda.default.init()
+    console.log('Eruda initialized!')
+  })
 }
 
 const app = createApp(App)

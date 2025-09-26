@@ -1,32 +1,31 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 import { useTelegram } from '@/composables/useTelegram'
 import { useAuthStore } from '@/stores/auth'
 import { computed, watchEffect, onMounted } from 'vue'
 
-const { isReady, webApp } = useTelegram()
+const { isReady, user, webApp } = useTelegram()
 const authStore = useAuthStore()
+const router = useRouter()
 
 // Инициализируем авторизацию когда приложение готово
 onMounted(async () => {
-  console.log('initData', webApp.value?.initData)
-  
   if (isReady.value) {
     await authStore.initialize()
     
-    // Если есть Telegram WebApp с initData, но нет авторизации в Supabase
-    if (webApp.value?.initData && !authStore.isAuthenticated) {
-      const result = await authStore.signInWithTelegram(webApp.value.initData)
+    // Если есть Telegram пользователь, авторизуем его
+    if (user.value && !authStore.isAuthenticated) {
+      const result = await authStore.signInWithTelegram(user.value)
       
       if (result.success) {
-        // Если это новый пользователь или профиль не завершен, перенаправляем на форму
-        if (result.isNewUser || !authStore.profile?.profile_completed) {
-          // Роутер автоматически перенаправит на форму через guards
-          console.log('New user or incomplete profile, will redirect to form')
+        console.log('Telegram user authenticated:', user.value.id)
+        
+        // Если это первая авторизация, показываем страницу успеха
+        if (result.isNewUser) {
+          router.push('/auth-success')
         }
       } else {
         console.error('Failed to authenticate with Telegram:', result.error)
-        // Можно показать пользователю ошибку или предложить повторить попытку
       }
     }
   }

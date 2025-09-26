@@ -43,7 +43,7 @@ const handleSubmit = async () => {
   try {
     // Авторизуемся через Telegram если еще не авторизованы
     if (!authStore.isAuthenticated && telegramUser.value) {
-      const authResult = await authStore.signInWithTelegram((window as any).Telegram?.WebApp?.initData || '')
+      const authResult = await authStore.signInWithTelegram(telegramUser.value)
 
       if (!authResult.success) {
         hapticFeedback('error')
@@ -60,8 +60,6 @@ const handleSubmit = async () => {
       height: heightNum,
       weight: weightNum,
       birth_date: birthDate.value,
-      telegram_id: telegramUser.value?.id,
-      username: telegramUser.value?.username,
     })
 
     if (!profileResult.success) {

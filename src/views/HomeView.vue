@@ -9,11 +9,17 @@ const { user: telegramUser } = useTelegram()
 
 <template>
   <div>
-    <!-- Показываем статус авторизации для отладки -->
-    <div v-if="authStore.isAuthenticated && authStore.profile" class="mb-4 p-4 bg-green-100 rounded-lg">
+    <!-- Показываем статус авторизации и профиля -->
+    <div v-if="authStore.isAuthenticated && authStore.hasCompleteProfile && authStore.profile" class="mb-4 p-4 bg-green-100 rounded-lg">
       <h3 class="text-lg font-semibold text-green-800">Добро пожаловать!</h3>
       <p class="text-green-700">{{ authStore.profile.first_name }} {{ authStore.profile.last_name }}</p>
-      <p class="text-sm text-green-600">Профиль загружен из Supabase</p>
+      <p class="text-sm text-green-600">✅ Профиль полностью заполнен</p>
+    </div>
+
+    <div v-else-if="authStore.isAuthenticated && !authStore.hasCompleteProfile && authStore.telegramUser" class="mb-4 p-4 bg-orange-100 rounded-lg">
+      <h3 class="text-lg font-semibold text-orange-800">Почти готово!</h3>
+      <p class="text-orange-700">{{ authStore.telegramUser.first_name }} {{ authStore.telegramUser.last_name || '' }}</p>
+      <p class="text-sm text-orange-600">⚠️ Нужно заполнить анкету</p>
     </div>
 
     <div v-else-if="telegramUser" class="mb-4 p-4 bg-yellow-100 rounded-lg">

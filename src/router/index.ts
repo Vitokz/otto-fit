@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
+import AuthSuccessView from '../views/AuthSuccessView.vue'
 import UserDataForm from '../components/UserDataForm.vue'
 
 const router = createRouter({
@@ -11,6 +12,12 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
       meta: { requiresAuth: true, requiresCompleteProfile: true }
+    },
+    {
+      path: '/auth-success',
+      name: 'auth-success',
+      component: AuthSuccessView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/user-data',
@@ -41,14 +48,14 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (requiresCompleteProfile && authStore.isAuthenticated) {
-    // Проверяем завершенность профиля
-    if (!authStore.profile?.profile_completed && to.name !== 'user-data') {
+    // Проверяем заполненность профиля через computed свойство из store
+    if (!authStore.hasCompleteProfile && to.name !== 'user-data') {
       next({ name: 'user-data' })
       return
     }
     
     // Если профиль завершен, но пользователь на странице заполнения данных
-    if (authStore.profile?.profile_completed && to.name === 'user-data') {
+    if (authStore.hasCompleteProfile && to.name === 'user-data') {
       next({ name: 'home' })
       return
     }

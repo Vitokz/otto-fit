@@ -1,7 +1,6 @@
 -- Создание таблицы профилей пользователей
 CREATE TABLE user_profiles (
-    id UUID REFERENCES auth.users(id) PRIMARY KEY,
-    telegram_id BIGINT UNIQUE,
+    telegram_id BIGINT PRIMARY KEY,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     username TEXT,
@@ -14,25 +13,10 @@ CREATE TABLE user_profiles (
 );
 
 -- Создание индексов для быстрого поиска
-CREATE INDEX idx_user_profiles_telegram_id ON user_profiles(telegram_id);
 CREATE INDEX idx_user_profiles_created_at ON user_profiles(created_at);
 
--- Включение Row Level Security
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
-
--- Политики безопасности: пользователи могут видеть и изменять только свои данные
-CREATE POLICY "Users can view their own profile" 
-    ON user_profiles FOR SELECT 
-    USING (auth.uid() = id);
-
-CREATE POLICY "Users can insert their own profile" 
-    ON user_profiles FOR INSERT 
-    WITH CHECK (auth.uid() = id);
-
-CREATE POLICY "Users can update their own profile" 
-    ON user_profiles FOR UPDATE 
-    USING (auth.uid() = id) 
-    WITH CHECK (auth.uid() = id);
+-- Отключаем Row Level Security, так как используем только telegram_id без auth.users
+-- ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Функция для автоматического обновления updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()

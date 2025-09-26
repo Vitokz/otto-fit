@@ -21,10 +21,8 @@ export type Database = {
           first_name: string
           gender: string | null
           height: number | null
-          id: string
           last_name: string
-          profile_completed: boolean | null
-          telegram_id: number | null
+          telegram_id: number
           updated_at: string | null
           username: string | null
           weight: number | null
@@ -35,10 +33,8 @@ export type Database = {
           first_name: string
           gender?: string | null
           height?: number | null
-          id: string
           last_name: string
-          profile_completed?: boolean | null
-          telegram_id?: number | null
+          telegram_id: number
           updated_at?: string | null
           username?: string | null
           weight?: number | null
@@ -49,10 +45,8 @@ export type Database = {
           first_name?: string
           gender?: string | null
           height?: number | null
-          id?: string
           last_name?: string
-          profile_completed?: boolean | null
-          telegram_id?: number | null
+          telegram_id?: number
           updated_at?: string | null
           username?: string | null
           weight?: number | null
