@@ -12,7 +12,7 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { requiresAuth: true, requiresCompleteProfile: true }
+      meta: { requiresAuth: true }
     },
     {
       path: '/auth-success',
@@ -44,39 +44,23 @@ router.beforeEach(async (to, from, next) => {
     await authStore.initialize()
   }
 
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const requiresCompleteProfile = to.matched.some(record => record.meta.requiresCompleteProfile)
 
-  if (requiresAuth && !authStore.isAuthenticated) {
+  if (!authStore.isAuthenticated) {
     // Пользователь не авторизован, но это должно обрабатываться автоматически в App.vue
     // Просто ждем авторизации
     next()
     return
   }
 
-  // Обработка корневого маршрута - перенаправляем на нужный экран в зависимости от состояния профиля
-  if (to.name === 'home' && authStore.isAuthenticated) {
-    if (!authStore.hasCompleteProfile) {
-      next({ name: 'welcome' })
+  // Проверяем заполненность профиля через computed свойство из store
+  if (!authStore.hasCompleteProfile) {
+    next({ name: 'welcome' })
       return
-    } else {
-      next({ name: 'auth-success' })
-      return
-    }
   }
 
-  if (requiresCompleteProfile && authStore.isAuthenticated) {
-    // Проверяем заполненность профиля через computed свойство из store
-    if (!authStore.hasCompleteProfile && to.name !== 'user-data' && to.name !== 'welcome') {
-      next({ name: 'welcome' })
-      return
-    }
-    
-    // Если профиль завершен, но пользователь на welcome или user-data странице
-    if (authStore.hasCompleteProfile && (to.name === 'user-data' || to.name === 'welcome')) {
-      next({ name: 'auth-success' })
-      return
-    }
+  if (authStore.hasCompleteProfile) {
+    next({ name: 'auth-success' })
+    return
   }
 
   next()

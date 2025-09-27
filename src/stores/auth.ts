@@ -8,12 +8,9 @@ export const useAuthStore = defineStore('auth', () => {
     const profile = ref<UserProfile | null>(null)
     const loading = ref(false)
     const initialized = ref(false)
-
     const isAuthenticated = computed(() => !!telegramUser.value)
     
-    // Проверка заполненности профиля пользователя
     const hasCompleteProfile = computed(() => {
-        // Используем поле profile_completed из базы данных, если доступно
         if (profile.value && profile.value.profile_completed !== null) {
             return profile.value.profile_completed
         }
@@ -25,11 +22,16 @@ export const useAuthStore = defineStore('auth', () => {
     const initialize = async () => {
         if (initialized.value) return
         
+        console.log('initialize auth store')
+        console.log('telegramUser', telegramUser.value)
+
         // Если есть сохраненный Telegram пользователь, загружаем его профиль
         const savedTelegramUser = telegramUser.value
         if (savedTelegramUser) {
             await loadProfile()
         }
+
+        console.log('savedTelegramUser in auth store', savedTelegramUser)
         
         initialized.value = true
     }
@@ -124,12 +126,6 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    // Выход
-    const signOut = async () => {
-        telegramUser.value = null
-        profile.value = null
-    }
-
     return {
         telegramUser,
         profile,
@@ -141,6 +137,5 @@ export const useAuthStore = defineStore('auth', () => {
         signInWithTelegram,
         loadProfile,
         upsertProfile,
-        signOut
     }
 })
