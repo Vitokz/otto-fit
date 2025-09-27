@@ -7,7 +7,6 @@ export const useAuthStore = defineStore('auth', () => {
     const telegramUser = ref<TelegramUser | null>(null)
     const profile = ref<UserProfile | null>(null)
     const loading = ref(false)
-    const initialized = ref(false)
     const isAuthenticated = computed(() => !!telegramUser.value)
     
     const hasCompleteProfile = computed(() => {
@@ -19,21 +18,17 @@ export const useAuthStore = defineStore('auth', () => {
     })
 
     // Инициализация авторизации
-    const initialize = async () => {
-        if (initialized.value) return
-        
-        console.log('initialize auth store')
-        console.log('telegramUser', telegramUser.value)
+    const initialize = async (user: TelegramUser) => {
+        console.log('start initialize auth store')
 
-        // Если есть сохраненный Telegram пользователь, загружаем его профиль
-        const savedTelegramUser = telegramUser.value
-        if (savedTelegramUser) {
-            await loadProfile()
+        if (profile.value) {
+            console.log('already initialized')
+            return
         }
 
-        console.log('savedTelegramUser in auth store', savedTelegramUser)
-        
-        initialized.value = true
+        await signInWithTelegram(user)
+
+        console.log('end initialize auth store', profile.value)
     }
 
     // Простая авторизация через Telegram пользователя
@@ -130,7 +125,6 @@ export const useAuthStore = defineStore('auth', () => {
         telegramUser,
         profile,
         loading,
-        initialized,
         isAuthenticated,
         hasCompleteProfile,
         initialize,

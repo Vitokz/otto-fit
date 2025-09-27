@@ -63,14 +63,12 @@ export function useTelegram() {
 
     const initTelegram = () => {
         try {
-            // Check for mock mode (for testing)
             const urlParams = new URLSearchParams(window.location.search)
-            const isMock = urlParams.get('mock') === 'true'
+            const isMock = urlParams.get('mock') === 'true' || import.meta.env.DEV
 
             if (isMock) {
-                // Mock mode for testing
-                const mockUser = urlParams.get('user')
-                const mockTheme = urlParams.get('theme') || 'light'
+                const mockUser = 'test'
+                const mockTheme = 'light'
 
                 const mockUsers: { [key: string]: TelegramUser } = {
                     test: {
@@ -80,48 +78,16 @@ export function useTelegram() {
                         username: "testuser",
                         language_code: "ru"
                     },
-                    premium: {
-                        id: 987654321,
-                        first_name: "Premium",
-                        last_name: "User",
-                        username: "premiumuser",
-                        language_code: "ru",
-                        is_premium: true
-                    }
                 }
 
-                const mockThemes: { [key: string]: any } = {
-                    light: {
-                        bg_color: "#ffffff",
-                        text_color: "#000000",
-                        hint_color: "#999999",
-                        link_color: "#2481cc",
-                        button_color: "#2481cc",
-                        button_text_color: "#ffffff",
-                        secondary_bg_color: "#f1f1f1"
-                    },
-                    dark: {
-                        bg_color: "#212121",
-                        text_color: "#ffffff",
-                        hint_color: "#aaaaaa",
-                        link_color: "#6ab7ff",
-                        button_color: "#6ab7ff",
-                        button_text_color: "#000000",
-                        secondary_bg_color: "#181818"
-                    }
-                }
-
-                user.value = mockUser && mockUser !== 'none' ? mockUsers[mockUser] || null : null
+                user.value = mockUsers[mockUser]
                 webApp.value = {
                     version: '6.0',
                     platform: 'web',
                     colorScheme: mockTheme as 'light' | 'dark',
-                    themeParams: mockThemes[mockTheme],
                     isExpanded: true,
                     viewportHeight: 600,
                     viewportStableHeight: 600,
-                    headerColor: mockThemes[mockTheme].bg_color,
-                    backgroundColor: mockThemes[mockTheme].bg_color,
                     initData: '',
                     initDataUnsafe: { user: user.value }
                 } as any
@@ -130,38 +96,12 @@ export function useTelegram() {
                 console.log('Mock Telegram WebApp initialized:', { user: user.value, theme: mockTheme })
                 return
             }
-
-            if (typeof window !== 'undefined' && WebApp) {
-                WebApp.ready()
-
-                webApp.value = WebApp as any
-                user.value = WebApp.initDataUnsafe?.user || null
-                isReady.value = true
-
-                // Expand the app to full height
-                WebApp.expand()
-
-                // Enable closing confirmation
-                WebApp.enableClosingConfirmation()
-
-                // Set header color to match theme
-                if (WebApp.themeParams.bg_color) {
-                    WebApp.setHeaderColor(WebApp.themeParams.bg_color)
-                }
-
-                console.log('Telegram WebApp initialized:', {
-                    version: WebApp.version,
-                    platform: WebApp.platform,
-                    user: user.value
-                })
-            } else {
-                // Fallback for browser testing
-                console.log('Telegram WebApp not available - running in browser mode')
-                isReady.value = true
-            }
         } catch (error) {
-            console.error('Failed to initialize Telegram WebApp:', error)
-            isReady.value = true // Still show the app
+            console.error('Error initializing Telegram:', error)
+            isReady.value = false
+            user.value = null
+            webApp.value = null
+            showAlert('Ошибка инициализации Telegram')
         }
     }
 

@@ -69,9 +69,7 @@ const handleSubmit = async () => {
     }
 
     hapticFeedback('success')
-    showAlert('Данные сохранены! 🎉')
     
-    // Navigate to main app
     router.push('/')
   } catch (error) {
     console.error('Error saving user data:', error)

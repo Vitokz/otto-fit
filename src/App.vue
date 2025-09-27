@@ -10,18 +10,13 @@ const router = useRouter()
 
 // Инициализируем авторизацию когда приложение готово
 onMounted(async () => {
-  if (isReady.value) {
-    await authStore.initialize()
+  if (isReady.value && user.value) {
+    await authStore.initialize(user.value)
     
-    // Если есть Telegram пользователь, авторизуем его (даже если уже авторизован - для обновления данных)
-    if (user.value) {
-      const result = await authStore.signInWithTelegram(user.value)
-      
-      if (result.success) {
-        console.log('Telegram user authenticated:', user.value.id)
-      } else {
-        console.error('Failed to authenticate with Telegram:', result.error)
-      }
+    if (authStore.profile) {
+      console.log('Telegram user authenticated:', user.value.id)
+    } else {
+      console.error('Failed to authenticate with Telegram:', user.value.id)
     }
   }
 })

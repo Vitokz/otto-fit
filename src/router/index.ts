@@ -34,16 +34,14 @@ const router = createRouter({
     },
   ],
 })
-
 // Route guards для автоматической авторизации и перенаправления
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
   // Ждем инициализации авторизации
-  if (!authStore.initialized) {
-    await authStore.initialize()
+  if (!authStore.profile) {
+    await authStore.initialize(authStore.telegramUser!)
   }
-
 
   if (!authStore.isAuthenticated) {
     // Пользователь не авторизован, но это должно обрабатываться автоматически в App.vue
@@ -52,14 +50,10 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // Проверяем заполненность профиля через computed свойство из store
-  if (!authStore.hasCompleteProfile) {
+  // Проверяем заполненность профиля только для основных маршрутов
+  // Избегаем бесконечных редиректов
+  if (!authStore.hasCompleteProfile && to.name !== 'welcome' && to.name !== 'user-data') {
     next({ name: 'welcome' })
-      return
-  }
-
-  if (authStore.hasCompleteProfile) {
-    next({ name: 'auth-success' })
     return
   }
 
