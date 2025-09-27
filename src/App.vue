@@ -13,8 +13,8 @@ onMounted(async () => {
   if (isReady.value) {
     await authStore.initialize()
     
-    // Если есть Telegram пользователь, авторизуем его
-    if (user.value && !authStore.isAuthenticated) {
+    // Если есть Telegram пользователь, авторизуем его (даже если уже авторизован - для обновления данных)
+    if (user.value) {
       const result = await authStore.signInWithTelegram(user.value)
       
       if (result.success) {

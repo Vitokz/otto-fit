@@ -13,16 +13,24 @@ export const useAuthStore = defineStore('auth', () => {
     
     // Проверка заполненности профиля пользователя
     const hasCompleteProfile = computed(() => {
-        return !!(profile.value && 
-            profile.value.height && 
-            profile.value.weight && 
-            profile.value.gender && 
-            profile.value.birth_date)
+        // Используем поле profile_completed из базы данных, если доступно
+        if (profile.value && profile.value.profile_completed !== null) {
+            return profile.value.profile_completed
+        }
+
+        return false
     })
 
     // Инициализация авторизации
     const initialize = async () => {
         if (initialized.value) return
+        
+        // Если есть сохраненный Telegram пользователь, загружаем его профиль
+        const savedTelegramUser = telegramUser.value
+        if (savedTelegramUser) {
+            await loadProfile()
+        }
+        
         initialized.value = true
     }
 
@@ -76,6 +84,15 @@ export const useAuthStore = defineStore('auth', () => {
         loading.value = true
         try {
             const { first_name, last_name, ...otherProfileData } = profileData
+            
+            // Проверяем будет ли профиль завершенным после обновления
+            const willBeComplete = !!(
+                otherProfileData.height && 
+                otherProfileData.weight && 
+                otherProfileData.gender && 
+                otherProfileData.birth_date
+            )
+            
             const profilePayload = {
                 telegram_id: telegramUser.value.id,
                 username: telegramUser.value.username,
@@ -83,6 +100,7 @@ export const useAuthStore = defineStore('auth', () => {
                 // Используем данные из формы, если есть, иначе из Telegram
                 first_name: first_name || telegramUser.value.first_name,
                 last_name: last_name || telegramUser.value.last_name || '',
+                profile_completed: willBeComplete,
                 ...otherProfileData,
             }
 
