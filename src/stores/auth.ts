@@ -19,7 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Инициализация авторизации
     const initialize = async (user: TelegramUser) => {
-        console.log('start initialize auth store')
+        console.log('start initialize auth store', user)
 
         if (profile.value) {
             console.log('already initialized')

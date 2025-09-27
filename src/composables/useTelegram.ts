@@ -63,8 +63,7 @@ export function useTelegram() {
 
     const initTelegram = () => {
         try {
-            const urlParams = new URLSearchParams(window.location.search)
-            const isMock = urlParams.get('mock') === 'true' || import.meta.env.DEV
+            const isMock = import.meta.env.DEV
 
             if (isMock) {
                 const mockUser = 'test'
@@ -96,6 +95,31 @@ export function useTelegram() {
                 console.log('Mock Telegram WebApp initialized:', { user: user.value, theme: mockTheme })
                 return
             }
+
+            if (typeof window !== 'undefined' && WebApp) {
+                WebApp.ready()
+    
+                webApp.value = WebApp as any
+                user.value = WebApp.initDataUnsafe?.user || null
+                isReady.value = true
+    
+                // Expand the app to full height
+                WebApp.expand()
+    
+                // Enable closing confirmation
+                WebApp.enableClosingConfirmation()
+    
+                // Set header color to match theme
+                if (WebApp.themeParams.bg_color) {
+                    WebApp.setHeaderColor(WebApp.themeParams.bg_color)
+                }
+    
+                console.log('Telegram WebApp initialized:', {
+                    version: WebApp.version,
+                    platform: WebApp.platform,
+                    user: user.value
+                })
+            }
         } catch (error) {
             console.error('Error initializing Telegram:', error)
             isReady.value = false
@@ -103,7 +127,7 @@ export function useTelegram() {
             webApp.value = null
             showAlert('Ошибка инициализации Telegram')
         }
-    }
+}
 
     const showAlert = (message: string) => {
         try {
