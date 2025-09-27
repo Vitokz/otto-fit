@@ -54,6 +54,17 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
+  // Обработка корневого маршрута - перенаправляем на нужный экран в зависимости от состояния профиля
+  if (to.name === 'home' && authStore.isAuthenticated) {
+    if (!authStore.hasCompleteProfile) {
+      next({ name: 'welcome' })
+      return
+    } else {
+      next({ name: 'auth-success' })
+      return
+    }
+  }
+
   if (requiresCompleteProfile && authStore.isAuthenticated) {
     // Проверяем заполненность профиля через computed свойство из store
     if (!authStore.hasCompleteProfile && to.name !== 'user-data' && to.name !== 'welcome') {
@@ -63,7 +74,7 @@ router.beforeEach(async (to, from, next) => {
     
     // Если профиль завершен, но пользователь на welcome или user-data странице
     if (authStore.hasCompleteProfile && (to.name === 'user-data' || to.name === 'welcome')) {
-      next({ name: 'home' })
+      next({ name: 'auth-success' })
       return
     }
   }
