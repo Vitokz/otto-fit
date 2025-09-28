@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import WelcomeScreen from '@/components/WelcomeScreen.vue'
+import ActivityCategoriesList from '@/components/ActivityCategoriesList.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTelegram } from '@/composables/useTelegram'
 
@@ -32,16 +33,6 @@ const { user: telegramUser } = useTelegram()
     <WelcomeScreen v-if="!authStore.hasCompleteProfile" />
     
     <!-- Основной контент для пользователей с заполненным профилем -->
-    <div v-else class="p-6">
-      <div class="text-center">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">🎯 Готов к тренировкам!</h2>
-        <p class="text-gray-600 mb-6">Твой профиль настроен. Время записывать рекорды!</p>
-        
-        <!-- Здесь будет основной функционал приложения -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <p class="text-gray-500">Основной функционал приложения будет здесь...</p>
-        </div>
-      </div>
-    </div>
+    <ActivityCategoriesList v-else />
   </div>
 </template>
