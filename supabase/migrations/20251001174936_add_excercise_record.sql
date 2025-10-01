@@ -21,8 +21,3 @@ CREATE INDEX idx_exercise_records_user_id ON exercise_records (user_id);
 CREATE INDEX idx_exercise_records_state ON exercise_records (state);
 
 CREATE INDEX idx_exercise_records_user_exercise ON exercise_records (user_id, exercise_id);
-
--- Create unique index to ensure only one current record per user per exercise
-CREATE UNIQUE INDEX idx_exercise_records_user_exercise_current ON exercise_records (user_id, exercise_id)
-WHERE
-    state = 'current';

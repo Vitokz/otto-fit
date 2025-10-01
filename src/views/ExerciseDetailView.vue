@@ -41,12 +41,13 @@ const loadExerciseData = async () => {
     exercise.value = exerciseData
 
     if (user.value?.id) {
-      // Загружаем замечания пользователя для этого упражнения
+      // Загружаем замечания пользователя для этого упражнения (только активные)
       const { data: commentsData, error: commentsError } = await supabase
         .from('exercise_comments')
         .select('*')
         .eq('exercise_id', exerciseId)
         .eq('user_id', user.value.id)
+        .eq('state', 'active')
         .order('created_at', { ascending: false })
 
       if (commentsError) {
