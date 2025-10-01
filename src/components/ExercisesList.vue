@@ -59,8 +59,7 @@ const loadCategoryAndExercises = async () => {
 
 const selectExercise = (exercise: Exercise) => {
   hapticFeedback('impact')
-  // TODO: Navigate to exercise details/tracking
-  console.log('Selected exercise:', exercise.name)
+  router.push({ name: 'exercise-detail', params: { exerciseId: exercise.id } })
 }
 
 const goBack = () => {

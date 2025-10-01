@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import AuthSuccessView from '../views/AuthSuccessView.vue'
+import ExerciseDetailView from '../views/ExerciseDetailView.vue'
 import UserDataForm from '../components/UserDataForm.vue'
 import WelcomeScreen from '../components/WelcomeScreen.vue'
 import ExercisesList from '../components/ExercisesList.vue'
@@ -37,6 +38,12 @@ const router = createRouter({
       path: '/category/:categoryId/exercises',
       name: 'category-exercises',
       component: ExercisesList,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/exercise/:exerciseId',
+      name: 'exercise-detail',
+      component: ExerciseDetailView,
       meta: { requiresAuth: true }
     },
   ],
