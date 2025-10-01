@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import AuthSuccessView from '../views/AuthSuccessView.vue'
 import UserDataForm from '../components/UserDataForm.vue'
 import WelcomeScreen from '../components/WelcomeScreen.vue'
+import ExercisesList from '../components/ExercisesList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +31,12 @@ const router = createRouter({
       path: '/user-data',
       name: 'user-data',
       component: UserDataForm,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/category/:categoryId/exercises',
+      name: 'category-exercises',
+      component: ExercisesList,
       meta: { requiresAuth: true }
     },
   ],

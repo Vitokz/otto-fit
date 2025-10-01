@@ -18,12 +18,8 @@ CREATE TABLE
         ),
         birth_date DATE,
         profile_completed BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP
-        WITH
-            TIME ZONE DEFAULT NOW (),
-            updated_at TIMESTAMP
-        WITH
-            TIME ZONE DEFAULT NOW ()
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
 
 -- Создание индексов для быстрого поиска

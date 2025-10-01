@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -34,6 +54,180 @@ export type Database = {
           id?: string
           name?: string
           sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      exercise_comments: {
+        Row: {
+          created_at: string
+          description: string | null
+          exercise_id: string
+          finished_at: string | null
+          id: string
+          short_name: string
+          state: string
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          exercise_id: string
+          finished_at?: string | null
+          id?: string
+          short_name: string
+          state: string
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          exercise_id?: string
+          finished_at?: string | null
+          id?: string
+          short_name?: string
+          state?: string
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_comments_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["telegram_id"]
+          },
+        ]
+      }
+      exercise_records: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          measure_unit_id: string
+          name: string
+          previoused_at: string | null
+          state: string
+          updated_at: string
+          user_id: number
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          measure_unit_id: string
+          name: string
+          previoused_at?: string | null
+          state: string
+          updated_at?: string
+          user_id: number
+          value: number
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          measure_unit_id?: string
+          name?: string
+          previoused_at?: string | null
+          state?: string
+          updated_at?: string
+          user_id?: number
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_records_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_records_measure_unit_id_fkey"
+            columns: ["measure_unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["telegram_id"]
+          },
+        ]
+      }
+      exercises: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercises_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "activity_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      measurement_units: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
           updated_at?: string
         }
         Relationships: []
@@ -214,7 +408,11 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
 } as const
+

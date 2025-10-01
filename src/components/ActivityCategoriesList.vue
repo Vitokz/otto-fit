@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
 import type { Database } from '@/types/database.types'
 
 type ActivityCategory = Database['public']['Tables']['activity_categories']['Row']
 
+const router = useRouter()
 const { hapticFeedback } = useTelegram()
 const categories = ref<ActivityCategory[]>([])
 const loading = ref(true)
@@ -36,8 +38,10 @@ const loadCategories = async () => {
 
 const selectCategory = (category: ActivityCategory) => {
   hapticFeedback('impact')
-  // TODO: Navigate to category exercises
-  console.log('Selected category:', category.name)
+  router.push({
+    name: 'category-exercises',
+    params: { categoryId: category.id }
+  })
 }
 
 onMounted(() => {
