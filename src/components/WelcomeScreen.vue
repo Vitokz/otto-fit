@@ -13,9 +13,9 @@ const handleStart = () => {
 </script>
 
 <template>
-  <div class="fixed inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
+  <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
     <!-- Header -->
-    <div class="pt-16 pb-6 px-6 text-center">
+    <div class="tg-safe-top pb-6 px-6 text-center">
       <h1 class="text-3xl font-bold text-gray-900 mb-2">OttoFit</h1>
       <p class="text-lg text-gray-600">Персональный дневник тренировок</p>
     </div>

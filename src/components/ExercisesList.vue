@@ -74,9 +74,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
+  <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
     <!-- Header -->
-    <div class="pt-16 pb-4 px-6">
+    <div class="tg-safe-top pb-4 px-6">
       <div class="flex items-center mb-4">
         <button 
           @click="goBack"

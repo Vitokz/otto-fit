@@ -85,9 +85,9 @@ const goBack = () => {
 </script>
 
 <template>
-  <div class="fixed inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
+  <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
     <!-- Header -->
-    <div class="pt-20 pb-4 px-6">
+    <div class="tg-safe-top pb-4 px-6">
       <h1 class="text-2xl font-bold text-gray-900">Введите свои данные</h1>
     </div>
 
