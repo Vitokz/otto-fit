@@ -126,7 +126,7 @@ onMounted(() => {
 
         <!-- Exercises Grid -->
         <div v-else-if="exercises.length > 0" class="p-6 overflow-y-auto" style="touch-action: pan-y;">
-          <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));">
+          <div class="grid grid-cols-2 gap-4">
             <button
               v-for="exercise in exercises"
               :key="exercise.id"
