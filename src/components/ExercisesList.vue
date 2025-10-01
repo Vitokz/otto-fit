@@ -77,21 +77,24 @@ onMounted(() => {
   <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
     <!-- Header -->
     <div class="tg-safe-top pb-4 px-6">
-      <div class="flex items-center mb-4">
+      <!-- Back Button -->
+      <div class="flex justify-start mb-4">
         <button 
           @click="goBack"
-          class="w-10 h-10 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center mr-4 hover:bg-gray-50 active:scale-95 transition-all duration-200"
+          class="w-10 h-10 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all duration-200"
           style="touch-action: manipulation;"
         >
           <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
         </button>
-        <div class="flex-1">
-          <h1 class="text-2xl font-bold text-gray-900">
-            {{ category?.name || 'Упражнения' }}
-          </h1>
-        </div>
+      </div>
+      
+      <!-- Category Title -->
+      <div class="text-center">
+        <h1 class="text-2xl font-bold text-gray-900">
+          {{ category?.name || 'Упражнения' }}
+        </h1>
       </div>
     </div>
 
