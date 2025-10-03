@@ -7,7 +7,9 @@ import type { Database } from '@/types/database.types'
 
 type Exercise = Database['public']['Tables']['exercises']['Row']
 type ExerciseComment = Database['public']['Tables']['exercise_comments']['Row']
-type ExerciseRecord = Database['public']['Tables']['exercise_records']['Row']
+type ExerciseRecord = Database['public']['Tables']['exercise_records']['Row'] & {
+  measurement_units?: { name: string }
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -59,7 +61,12 @@ const loadExerciseData = async () => {
       // Загружаем рекорды пользователя для этого упражнения
       const { data: recordsData, error: recordsError } = await supabase
         .from('exercise_records')
-        .select('*')
+        .select(`
+          *,
+          measurement_units (
+            name
+          )
+        `)
         .eq('exercise_id', exerciseId)
         .eq('user_id', user.value.id)
         .order('created_at', { ascending: false })
@@ -191,31 +198,26 @@ onMounted(() => {
             <div v-if="activeTab === 'comments'" class="flex-1 flex flex-col min-h-0">
               <!-- Comments List -->
               <div v-if="comments.length > 0" class="flex-1 p-6 pt-4 overflow-y-auto" style="touch-action: pan-y;">
-                <div class="space-y-4">
+                <div class="space-y-3">
                   <div
                     v-for="comment in comments"
                     :key="comment.id"
-                    class="bg-gray-50 rounded-2xl p-4 border border-gray-100"
+                    class="bg-gray-50 rounded-2xl p-4 border border-gray-100 h-24 flex items-center justify-between group hover:bg-gray-100 transition-colors cursor-pointer"
                   >
-                    <div class="flex items-center justify-between mb-2">
-                      <div class="flex items-center space-x-2">
-                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span class="text-sm font-medium text-gray-900">{{ comment.short_name }}</span>
+                    <div class="flex-1 min-w-0">
+                      <div class="mb-1">
+                        <span class="text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 px-2 py-1 rounded-lg inline-block max-w-full truncate">{{ comment.short_name }}</span>
                       </div>
-                      <span class="text-xs text-gray-500">
-                        {{ new Date(comment.created_at).toLocaleDateString('ru-RU') }}
-                      </span>
+                      <p v-if="comment.description" class="text-sm text-gray-700 leading-tight overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                        {{ comment.description }}
+                      </p>
                     </div>
-                    <p v-if="comment.description" class="text-sm text-gray-700 leading-relaxed">
-                      {{ comment.description }}
-                    </p>
-                    <div class="mt-2 flex items-center justify-between">
-                      <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
-                        {{ comment.state }}
-                      </span>
-                      <span v-if="comment.finished_at" class="text-xs text-gray-500">
-                        Завершено: {{ new Date(comment.finished_at).toLocaleDateString('ru-RU') }}
-                      </span>
+                    <div class="ml-4 flex items-center">
+                      <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -235,31 +237,18 @@ onMounted(() => {
             <div v-if="activeTab === 'records'" class="flex-1 flex flex-col min-h-0">
               <!-- Records List -->
               <div v-if="records.length > 0" class="flex-1 p-6 pt-4 overflow-y-auto" style="touch-action: pan-y;">
-                <div class="space-y-4">
+                <div class="space-y-3">
                   <div
                     v-for="record in records"
                     :key="record.id"
-                    class="bg-gray-50 rounded-2xl p-4 border border-gray-100"
+                    class="bg-gray-50 rounded-2xl p-4 border border-gray-100 h-24 flex items-center justify-between"
                   >
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-sm font-medium text-gray-900">{{ record.name }}</span>
-                      <span class="text-xs text-gray-500">
-                        {{ new Date(record.created_at).toLocaleDateString('ru-RU') }}
-                      </span>
+                    <div class="flex-1 min-w-0">
+                      <span class="text-sm font-medium text-gray-900 truncate">{{ record.name }}</span>
                     </div>
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center space-x-2">
-                        <span class="text-lg font-bold text-blue-600">{{ record.value }}</span>
-                        <span class="text-sm text-gray-500">{{ record.measure_unit_id }}</span>
-                      </div>
-                      <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
-                        {{ record.state }}
-                      </span>
-                    </div>
-                    <div v-if="record.previoused_at" class="mt-2">
-                      <span class="text-xs text-gray-500">
-                        Предыдущий: {{ new Date(record.previoused_at).toLocaleDateString('ru-RU') }}
-                      </span>
+                    <div class="flex items-baseline flex-shrink-0 ml-4">
+                      <span class="text-lg font-bold text-blue-600">{{ record.value }}</span>
+                      <span class="text-sm text-gray-500">&nbsp;{{ record.measurement_units?.name || 'ед.' }}</span>
                     </div>
                   </div>
                 </div>
