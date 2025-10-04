@@ -161,14 +161,12 @@ onMounted(() => {
         </div>
 
         <!-- Empty State -->
-        <div v-else class="flex-1 flex items-center justify-center">
-          <div class="text-center p-6">
-            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span class="text-2xl">🏃‍♂️</span>
-            </div>
-            <p class="text-gray-500 font-medium mb-2">Упражнения не найдены</p>
-            <p class="text-gray-400 text-sm">В этой категории пока нет упражнений</p>
+        <div v-else class="flex-1 flex flex-col items-center justify-center p-6">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+            <span class="text-2xl">🏃‍♂️</span>
           </div>
+          <p class="text-gray-500 font-medium mb-2 text-center">Упражнения не найдены</p>
+          <p class="text-gray-400 text-sm text-center">В этой категории пока нет упражнений</p>
         </div>
       </div>
     </div>

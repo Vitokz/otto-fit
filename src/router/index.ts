@@ -3,6 +3,8 @@ import { useAuthStore } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import AuthSuccessView from '../views/AuthSuccessView.vue'
 import ExerciseDetailView from '../views/ExerciseDetailView.vue'
+import CommentDetailView from '../views/CommentDetailView.vue'
+import AddCommentView from '../views/AddCommentView.vue'
 import UserDataForm from '../components/UserDataForm.vue'
 import WelcomeScreen from '../components/WelcomeScreen.vue'
 import ExercisesList from '../components/ExercisesList.vue'
@@ -44,6 +46,18 @@ const router = createRouter({
       path: '/exercise/:exerciseId',
       name: 'exercise-detail',
       component: ExerciseDetailView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/comment/:commentId',
+      name: 'comment-detail',
+      component: CommentDetailView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/exercise/:exerciseId/add-comment',
+      name: 'add-comment',
+      component: AddCommentView,
       meta: { requiresAuth: true }
     },
   ],
