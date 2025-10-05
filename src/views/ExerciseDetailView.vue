@@ -261,6 +261,29 @@ const saveRecord = async () => {
   }
 }
 
+const handleNumberKeypress = (event: KeyboardEvent) => {
+  const char = event.key
+  const input = event.target as HTMLInputElement
+  
+  // Разрешаем: цифры, точка, запятая, минус, backspace, delete, tab, escape, enter
+  if (
+    /[0-9]/.test(char) || 
+    char === '.' || 
+    char === ',' || 
+    char === '-' ||
+    ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(char)
+  ) {
+    // Дополнительная проверка для точки/запятой - только одна на поле
+    if ((char === '.' || char === ',') && input.value.includes('.')) {
+      event.preventDefault()
+    }
+    return
+  }
+  
+  // Блокируем все остальные символы
+  event.preventDefault()
+}
+
 onMounted(() => {
   loadExerciseData()
 })
@@ -474,6 +497,7 @@ onMounted(() => {
               :placeholder="editingRecord?.value?.toString()"
               style="touch-action: manipulation;"
               @focus="($event.target as HTMLInputElement)?.select()"
+              @keypress="handleNumberKeypress"
             />
             <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 text-base font-medium">
               {{ editingRecord?.measurement_units?.name || 'ед.' }}
@@ -575,6 +599,7 @@ onMounted(() => {
             placeholder="0"
             style="touch-action: manipulation;"
             @focus="($event.target as HTMLInputElement)?.select()"
+            @keypress="handleNumberKeypress"
           />
         </div>
 

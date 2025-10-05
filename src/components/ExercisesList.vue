@@ -7,6 +7,7 @@ import type { Database } from '@/types/database.types'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 type Exercise = Database['public']['Tables']['exercises']['Row']
+type MetconExercise = Database['public']['Tables']['metcon_exercises']['Row']
 type ActivityCategory = Database['public']['Tables']['activity_categories']['Row']
 
 const route = useRoute()
@@ -14,6 +15,7 @@ const router = useRouter()
 const { hapticFeedback } = useTelegram()
 
 const exercises = ref<Exercise[]>([])
+const metconExercises = ref<MetconExercise[]>([])
 const category = ref<ActivityCategory | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -38,7 +40,7 @@ const loadCategoryAndExercises = async () => {
 
     category.value = categoryData
 
-    // Загружаем упражнения категории
+    // Загружаем обычные упражнения категории
     const { data: exercisesData, error: exercisesError } = await supabase
       .from('exercises')
       .select('*')
@@ -50,6 +52,19 @@ const loadCategoryAndExercises = async () => {
     }
 
     exercises.value = exercisesData || []
+
+    // Загружаем метконы категории
+    const { data: metconData, error: metconError } = await supabase
+      .from('metcon_exercises')
+      .select('*')
+      .eq('category_id', categoryId)
+      .order('sort_order', { ascending: true })
+
+    if (metconError) {
+      console.error('Error loading metcon exercises:', metconError)
+    } else {
+      metconExercises.value = metconData || []
+    }
   } catch (err: any) {
     console.error('Error loading category and exercises:', err)
     error.value = err.message || 'Ошибка загрузки упражнений'
@@ -58,9 +73,16 @@ const loadCategoryAndExercises = async () => {
   }
 }
 
-const selectExercise = (exercise: Exercise) => {
+const selectExercise = (exercise: Exercise | MetconExercise) => {
   hapticFeedback('impact')
-  router.push({ name: 'exercise-detail', params: { exerciseId: exercise.id } })
+  // Определяем тип упражнения по наличию поля description
+  if ('description' in exercise && exercise.description) {
+    // Это меткон
+    router.push({ name: 'metcon-detail', params: { exerciseId: exercise.id } })
+  } else {
+    // Это обычное упражнение
+    router.push({ name: 'exercise-detail', params: { exerciseId: exercise.id } })
+  }
 }
 
 const goBack = () => {
@@ -123,8 +145,9 @@ onMounted(() => {
         </div>
 
         <!-- Exercises Grid -->
-        <div v-else-if="exercises.length > 0" class="p-6 overflow-y-auto" style="touch-action: pan-y;">
+        <div v-else-if="exercises.length > 0 || metconExercises.length > 0" class="p-6 overflow-y-auto" style="touch-action: pan-y;">
           <div class="grid grid-cols-2 gap-4">
+            <!-- Regular Exercises -->
             <button
               v-for="exercise in exercises"
               :key="exercise.id"
@@ -150,6 +173,36 @@ onMounted(() => {
               <div class="w-full mt-3">
                 <h3 class="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors leading-tight overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;">
                   {{ exercise.name }}
+                </h3>
+              </div>
+            </button>
+
+            <!-- Metcon Exercises -->
+            <button
+              v-for="metcon in metconExercises"
+              :key="metcon.id"
+              @click="selectExercise(metcon)"
+              class="p-4 bg-orange-50 border border-orange-200 rounded-2xl text-center hover:bg-orange-100 active:scale-95 transition-all duration-200 group aspect-square flex flex-col justify-between items-center"
+              style="touch-action: manipulation;"
+            >
+              <!-- Top section with icon -->
+              <div class="flex items-center justify-center" style="height: 80px;">
+                <!-- Metcon Icon -->
+                <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                  <img 
+                    v-if="metcon.logo_url" 
+                    :src="metcon.logo_url" 
+                    :alt="metcon.name"
+                    class="w-10 h-10 object-contain"
+                  />
+                  <span v-else class="text-3xl">🔥</span>
+                </div>
+              </div>
+              
+              <!-- Bottom section with name -->
+              <div class="w-full mt-3">
+                <h3 class="text-sm font-semibold text-gray-900 group-hover:text-orange-600 transition-colors leading-tight overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;">
+                  {{ metcon.name }}
                 </h3>
               </div>
             </button>

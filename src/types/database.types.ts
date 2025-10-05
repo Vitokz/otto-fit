@@ -232,6 +232,115 @@ export type Database = {
         }
         Relationships: []
       }
+      metcon_exercise_records: {
+        Row: {
+          created_at: string
+          id: string
+          measure_unit_id: string
+          metcon_exercise_id: string
+          previoused_at: string | null
+          state: string
+          updated_at: string
+          user_id: number
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          measure_unit_id: string
+          metcon_exercise_id: string
+          previoused_at?: string | null
+          state: string
+          updated_at?: string
+          user_id: number
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          measure_unit_id?: string
+          metcon_exercise_id?: string
+          previoused_at?: string | null
+          state?: string
+          updated_at?: string
+          user_id?: number
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metcon_exercise_records_measure_unit_id_fkey"
+            columns: ["measure_unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metcon_exercise_records_metcon_exercise_id_fkey"
+            columns: ["metcon_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "metcon_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metcon_exercise_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["telegram_id"]
+          },
+        ]
+      }
+      metcon_exercises: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string
+          id: string
+          logo_url: string | null
+          measure_unit_id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description: string
+          id?: string
+          logo_url?: string | null
+          measure_unit_id: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          logo_url?: string | null
+          measure_unit_id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metcon_exercises_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "activity_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metcon_exercises_measure_unit_id_fkey"
+            columns: ["measure_unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           birth_date: string | null
