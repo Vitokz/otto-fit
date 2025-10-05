@@ -28,7 +28,7 @@ const activeTab = ref<'comments' | 'records'>('comments')
 // Edit Modal state
 const showEditModal = ref(false)
 const editingRecord = ref<ExerciseRecord | null>(null)
-const editValue = ref('')
+const editValue = ref<number | null>(null)
 const saving = ref(false)
 
 // Add Record Modal state
@@ -211,7 +211,7 @@ const saveNewRecord = async () => {
 const openEditModal = (record: ExerciseRecord) => {
   hapticFeedback('impact')
   editingRecord.value = record
-  editValue.value = record.value.toString()
+  editValue.value = record.value
   showEditModal.value = true
 }
 
@@ -219,18 +219,18 @@ const closeEditModal = () => {
   hapticFeedback('impact')
   showEditModal.value = false
   editingRecord.value = null
-  editValue.value = ''
+  editValue.value = null
   saving.value = false
 }
 
 const saveRecord = async () => {
-  if (!editingRecord.value || !user.value?.id) return
+  if (!editingRecord.value || !user.value?.id || editValue.value === null) return
   
   try {
     saving.value = true
     hapticFeedback('impact')
     
-    const newValue = parseFloat(editValue.value)
+    const newValue = editValue.value
     if (isNaN(newValue)) {
       throw new Error('Некорректное значение')
     }
@@ -471,7 +471,7 @@ onMounted(() => {
               type="number"
               step="0.01"
               class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-xl font-bold text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
-              :placeholder="editingRecord?.value.toString()"
+              :placeholder="editingRecord?.value?.toString()"
               style="touch-action: manipulation;"
               @focus="($event.target as HTMLInputElement)?.select()"
             />
@@ -497,7 +497,7 @@ onMounted(() => {
           </button>
           <button
             @click="saveRecord"
-            :disabled="saving || !editValue.trim()"
+            :disabled="saving || editValue === null"
             class="flex-1 py-4 px-5 bg-blue-500 text-white rounded-xl font-bold text-base hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             style="touch-action: manipulation;"
           >
