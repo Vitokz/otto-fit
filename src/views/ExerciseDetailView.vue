@@ -441,7 +441,7 @@ onMounted(() => {
     <!-- Edit Record Modal -->
     <div 
       v-if="showEditModal" 
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-gray-900 bg-opacity-30 flex items-center justify-center z-50 p-4"
       @click="closeEditModal"
       style="touch-action: none;"
     >
@@ -470,7 +470,7 @@ onMounted(() => {
               v-model="editValue"
               type="number"
               step="0.01"
-              class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-xl font-bold text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
+              class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-xl font-bold text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
               :placeholder="editingRecord?.value.toString()"
               style="touch-action: manipulation;"
               @focus="($event.target as HTMLInputElement)?.select()"
@@ -512,7 +512,7 @@ onMounted(() => {
     <!-- Add Record Modal -->
     <div 
       v-if="showAddRecordModal" 
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-gray-900 bg-opacity-30 flex items-center justify-center z-50 p-4"
       @click="closeAddRecordModal"
       style="touch-action: none;"
     >
@@ -534,7 +534,7 @@ onMounted(() => {
           <input
             v-model="newRecordName"
             type="text"
-            class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-lg font-medium text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors capitalize"
+            class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-lg font-medium text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors capitalize"
             placeholder="Например: Максимальный вес"
             style="touch-action: manipulation;"
             @focus="($event.target as HTMLInputElement)?.select()"
@@ -548,7 +548,7 @@ onMounted(() => {
           </label>
           <select
             v-model="newRecordUnitId"
-            class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-lg font-medium text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
+            class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-lg font-medium text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
             style="touch-action: manipulation;"
           >
             <option value="" disabled>Выберите единицу</option>
@@ -571,7 +571,7 @@ onMounted(() => {
             v-model="newRecordValue"
             type="number"
             step="0.01"
-            class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-xl font-bold text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
+            class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-xl font-bold text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
             placeholder="0"
             style="touch-action: manipulation;"
             @focus="($event.target as HTMLInputElement)?.select()"
