@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
 import type { Database } from '@/types/database.types'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 type ExerciseComment = Database['public']['Tables']['exercise_comments']['Row']
 
@@ -132,6 +133,17 @@ const completeComment = async () => {
   }
 }
 
+const handleContentClick = (event: Event) => {
+  const target = event.target as HTMLElement
+  // Закрываем клавиатуру если клик не по textarea
+  if (target.tagName !== 'TEXTAREA') {
+    const activeElement = document.activeElement as HTMLElement
+    if (activeElement && activeElement.tagName === 'TEXTAREA') {
+      activeElement.blur()
+    }
+  }
+}
+
 onMounted(() => {
   loadComment()
 })
@@ -166,12 +178,7 @@ onMounted(() => {
     <div class="flex-1 px-6 pb-8 flex flex-col min-h-0">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-0">
         <!-- Loading State -->
-        <div v-if="loading" class="flex-1 flex items-center justify-center">
-          <div class="text-center">
-            <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-gray-500">Загрузка...</p>
-          </div>
-        </div>
+        <LoadingSpinner v-if="loading" />
 
         <!-- Error State -->
         <div v-else-if="error" class="flex-1 flex items-center justify-center">
@@ -192,7 +199,7 @@ onMounted(() => {
         </div>
 
         <!-- Main Content -->
-        <div v-else-if="comment" class="flex-1 flex flex-col min-h-0 p-6">
+        <div v-else-if="comment" class="flex-1 flex flex-col min-h-0 p-6" @click="handleContentClick">
           <!-- Comment Title -->
           <div class="mb-6">
             <h2 class="text-lg font-semibold text-gray-800 mb-2">Краткое название</h2>
@@ -206,9 +213,11 @@ onMounted(() => {
             <h3 class="text-lg font-semibold text-gray-800 mb-3">Описание</h3>
             <textarea
               v-model="editedDescription"
-              class="flex-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
+              class="flex-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-base text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
               placeholder="Добавьте подробное описание замечания..."
               style="touch-action: manipulation; min-height: 200px;"
+              enterkeyhint="done"
+              @click.stop
             ></textarea>
           </div>
 

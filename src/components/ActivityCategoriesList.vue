@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
 import type { Database } from '@/types/database.types'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 type ActivityCategory = Database['public']['Tables']['activity_categories']['Row']
 
@@ -60,12 +61,7 @@ onMounted(() => {
     <div class="flex-1 px-6 pb-8 flex flex-col min-h-0">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-0">
         <!-- Loading State -->
-        <div v-if="loading" class="flex-1 flex items-center justify-center">
-          <div class="text-center">
-            <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-gray-500">Загрузка категорий...</p>
-          </div>
-        </div>
+        <LoadingSpinner v-if="loading" message="Загрузка категорий..." />
 
         <!-- Error State -->
         <div v-else-if="error" class="flex-1 flex items-center justify-center">
