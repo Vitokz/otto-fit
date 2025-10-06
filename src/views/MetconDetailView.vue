@@ -199,7 +199,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="tg-screen bg-gradient-to-br from-orange-50 to-red-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
+  <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
     <!-- Header -->
     <div class="tg-safe-top pb-4 px-6">
       <!-- Back Button -->
@@ -228,7 +228,7 @@ onMounted(() => {
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-0">
         <!-- Loading State -->
         <div v-if="loading" class="flex-1 flex items-center justify-center">
-          <div class="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
+          <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
         </div>
 
         <!-- Error State -->
@@ -241,7 +241,7 @@ onMounted(() => {
             <p class="text-gray-500 text-sm mb-4">{{ error }}</p>
             <button 
               @click="loadMetconData"
-              class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
               style="touch-action: manipulation;"
             >
               Попробовать снова
@@ -255,13 +255,13 @@ onMounted(() => {
           <div class="p-6 pb-0">
             <button
               @click="toggleDescription"
-              class="w-full p-4 bg-orange-50 border border-orange-200 rounded-2xl text-left hover:bg-orange-100 active:scale-95 transition-all duration-200"
+              class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl text-left hover:bg-gray-100 active:scale-95 transition-all duration-200"
               style="touch-action: manipulation;"
             >
               <div class="flex items-center justify-between">
                 <span class="text-lg font-semibold text-gray-900">Описание</span>
                 <svg 
-                  :class="['w-5 h-5 text-orange-600 transition-transform duration-200', showDescription ? 'rotate-180' : '']"
+                  :class="['w-5 h-5 text-blue-600 transition-transform duration-200', showDescription ? 'rotate-180' : '']"
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -281,12 +281,12 @@ onMounted(() => {
 
           <!-- Record Section -->
           <div class="flex-1 p-6 pt-4">
-            <div class="bg-orange-50 border border-orange-200 rounded-2xl p-6">
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6">
               <div class="text-center">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Ваш рекорд</h3>
                 
                 <div v-if="record" class="mb-6">
-                  <div class="text-4xl font-bold text-orange-600 mb-2">{{ record.value }}</div>
+                  <div class="text-4xl font-bold text-blue-600 mb-2">{{ record.value }}</div>
                   <div class="text-sm text-gray-500">{{ record.measurement_units?.name || 'ед.' }}</div>
                 </div>
                 
@@ -310,7 +310,7 @@ onMounted(() => {
               </button>
               <button
                 @click="openEditModal"
-                class="flex-1 py-4 bg-orange-500 text-white rounded-2xl font-semibold hover:bg-orange-600 active:scale-95 transition-all duration-200"
+                class="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-semibold hover:bg-blue-600 active:scale-95 transition-all duration-200"
                 style="touch-action: manipulation;"
               >
                 {{ record ? 'Обновить рекорд' : 'Добавить рекорд' }}
@@ -339,7 +339,7 @@ onMounted(() => {
         </div>
 
         <!-- Metcon Name -->
-        <div class="text-center mb-12 p-4 bg-orange-50 rounded-xl border border-orange-200">
+        <div class="text-center mb-12 p-4 bg-gray-50 rounded-xl border border-gray-200">
           <p class="text-gray-900 text-lg font-bold leading-tight break-words">{{ metcon?.name }}</p>
         </div>
 
@@ -353,7 +353,7 @@ onMounted(() => {
               v-model="editValue"
               type="number"
               step="0.01"
-              class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-xl font-bold text-center text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none bg-gray-50 focus:bg-white transition-colors"
+              class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-xl font-bold text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
               :placeholder="record?.value?.toString() || '0'"
               style="touch-action: manipulation;"
               @focus="($event.target as HTMLInputElement)?.select()"
@@ -382,7 +382,7 @@ onMounted(() => {
             <button
               @click="saveRecord"
               :disabled="saving || editValue === null"
-              class="flex-1 py-4 px-5 bg-orange-500 text-white rounded-xl font-bold text-base hover:bg-orange-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              class="flex-1 py-4 px-5 bg-blue-500 text-white rounded-xl font-bold text-base hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               style="touch-action: manipulation;"
             >
               <div v-if="saving" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>

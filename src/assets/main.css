@@ -116,3 +116,20 @@ button, [role="button"] {
   padding-left: var(--tg-safe-area-inset-left);
   padding-right: var(--tg-safe-area-inset-right);
 }
+
+/* Desktop-specific adjustments for proper centering */
+@media (min-width: 1024px) {
+  .tg-screen {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  
+  .tg-screen > * {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+}

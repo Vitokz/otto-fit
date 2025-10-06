@@ -52,14 +52,16 @@ onMounted(() => {
 
 <template>
   <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
-    <!-- Header -->
-    <div class="tg-safe-top pb-4 px-6 text-center">
-      <h1 class="text-2xl font-bold text-gray-900 mb-2">Категории упражнений</h1>
-    </div>
+    <!-- Main centered container -->
+    <div class="flex-1 flex flex-col min-h-0 w-full max-w-4xl mx-auto px-6">
+      <!-- Header -->
+      <div class="tg-safe-top pb-4 text-center">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Категории упражнений</h1>
+      </div>
 
-    <!-- Categories List -->
-    <div class="flex-1 px-6 pb-8 flex flex-col min-h-0">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-0">
+      <!-- Categories List -->
+      <div class="flex-1 pb-8 flex flex-col min-h-0">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-0">
         <!-- Loading State -->
         <LoadingSpinner v-if="loading" message="Загрузка категорий..." />
 
@@ -116,6 +118,7 @@ onMounted(() => {
             <p class="text-gray-500 font-medium mb-2">Категории не найдены</p>
             <p class="text-gray-400 text-sm">Категории упражнений пока не добавлены</p>
           </div>
+        </div>
         </div>
       </div>
     </div>

@@ -97,32 +97,34 @@ onMounted(() => {
 
 <template>
   <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
-    <!-- Header -->
-    <div class="tg-safe-top pb-4 px-6">
-      <!-- Back Button -->
-      <div class="flex justify-start mb-4">
-        <button 
-          @click="goBack"
-          class="w-10 h-10 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all duration-200"
-          style="touch-action: manipulation;"
-        >
-          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </button>
+    <!-- Main centered container -->
+    <div class="flex-1 flex flex-col min-h-0 w-full max-w-4xl mx-auto px-6">
+      <!-- Header -->
+      <div class="tg-safe-top pb-4">
+        <!-- Back Button -->
+        <div class="flex justify-start mb-4">
+          <button 
+            @click="goBack"
+            class="w-10 h-10 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all duration-200"
+            style="touch-action: manipulation;"
+          >
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Category Title -->
+        <div class="text-center">
+          <h1 class="text-2xl font-bold text-gray-900">
+            {{ category?.name || 'Упражнения' }}
+          </h1>
+        </div>
       </div>
-      
-      <!-- Category Title -->
-      <div class="text-center">
-        <h1 class="text-2xl font-bold text-gray-900">
-          {{ category?.name || 'Упражнения' }}
-        </h1>
-      </div>
-    </div>
 
-    <!-- Exercises List -->
-    <div class="flex-1 px-6 pb-8 flex flex-col min-h-0">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-0">
+      <!-- Exercises List -->
+      <div class="flex-1 pb-8 flex flex-col min-h-0">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-0">
         <!-- Loading State -->
         <LoadingSpinner v-if="loading" message="Загрузка упражнений..." />
 
@@ -146,34 +148,36 @@ onMounted(() => {
 
         <!-- Exercises Grid -->
         <div v-else-if="exercises.length > 0 || metconExercises.length > 0" class="p-6 overflow-y-auto" style="touch-action: pan-y;">
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-3">
             <!-- Regular Exercises -->
             <button
               v-for="exercise in exercises"
               :key="exercise.id"
               @click="selectExercise(exercise)"
-              class="p-4 bg-gray-50 border border-gray-200 rounded-2xl text-center hover:bg-gray-100 active:scale-95 transition-all duration-200 group aspect-square flex flex-col justify-between items-center"
+              class="p-3 lg:p-4 xl:p-5 bg-gray-50 border border-gray-200 rounded-xl text-center hover:bg-gray-100 active:scale-95 transition-all duration-200 group aspect-square flex flex-col justify-between items-center"
               style="touch-action: manipulation;"
             >
               <!-- Top section with icon -->
-              <div class="flex items-center justify-center" style="height: 80px;">
+              <div class="flex items-center justify-center" style="height: 60px;">
                 <!-- Exercise Icon/Logo -->
-                <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                <div class="w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                   <img 
                     v-if="exercise.logo_url" 
                     :src="exercise.logo_url" 
                     :alt="exercise.name"
-                    class="w-10 h-10 object-contain"
+                    class="w-8 h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 object-contain"
                   />
-                  <span v-else class="text-3xl">💪</span>
+                  <span v-else class="text-2xl lg:text-3xl xl:text-4xl">💪</span>
                 </div>
               </div>
               
               <!-- Bottom section with name -->
-              <div class="w-full mt-3">
-                <h3 class="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors leading-tight overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;">
-                  {{ exercise.name }}
-                </h3>
+              <div class="w-full mt-2">
+                <div class="bg-blue-100 border border-blue-200 rounded-lg p-2 lg:p-3">
+                  <h3 class="text-sm lg:text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors leading-tight overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;">
+                    {{ exercise.name }}
+                  </h3>
+                </div>
               </div>
             </button>
 
@@ -182,28 +186,30 @@ onMounted(() => {
               v-for="metcon in metconExercises"
               :key="metcon.id"
               @click="selectExercise(metcon)"
-              class="p-4 bg-orange-50 border border-orange-200 rounded-2xl text-center hover:bg-orange-100 active:scale-95 transition-all duration-200 group aspect-square flex flex-col justify-between items-center"
+              class="p-3 lg:p-4 xl:p-5 bg-gray-50 border border-gray-200 rounded-xl text-center hover:bg-gray-100 active:scale-95 transition-all duration-200 group aspect-square flex flex-col justify-between items-center"
               style="touch-action: manipulation;"
             >
               <!-- Top section with icon -->
-              <div class="flex items-center justify-center" style="height: 80px;">
+              <div class="flex items-center justify-center" style="height: 60px;">
                 <!-- Metcon Icon -->
-                <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                <div class="w-12 h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                   <img 
                     v-if="metcon.logo_url" 
                     :src="metcon.logo_url" 
                     :alt="metcon.name"
-                    class="w-10 h-10 object-contain"
+                    class="w-8 h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 object-contain"
                   />
-                  <span v-else class="text-3xl">🔥</span>
+                  <span v-else class="text-2xl lg:text-3xl xl:text-4xl">🔥</span>
                 </div>
               </div>
               
               <!-- Bottom section with name -->
-              <div class="w-full mt-3">
-                <h3 class="text-sm font-semibold text-gray-900 group-hover:text-orange-600 transition-colors leading-tight overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;">
-                  {{ metcon.name }}
-                </h3>
+              <div class="w-full mt-2">
+                <div class="bg-blue-100 border border-blue-200 rounded-lg p-2 lg:p-3">
+                  <h3 class="text-sm lg:text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors leading-tight overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;">
+                    {{ metcon.name }}
+                  </h3>
+                </div>
               </div>
             </button>
           </div>
@@ -216,6 +222,7 @@ onMounted(() => {
           </div>
           <p class="text-gray-500 font-medium mb-2 text-center">Упражнения не найдены</p>
           <p class="text-gray-400 text-sm text-center">В этой категории пока нет упражнений</p>
+        </div>
         </div>
       </div>
     </div>
