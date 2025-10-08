@@ -25,20 +25,17 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const activeTab = ref<'comments' | 'records'>('comments')
 
-// Edit Modal state
-const showEditModal = ref(false)
-const editingRecord = ref<ExerciseRecord | null>(null)
-const editValue = ref<number | null>(null)
-const saving = ref(false)
-
-// Add Record Modal state
-const showAddRecordModal = ref(false)
-const newRecordName = ref('')
-const newRecordValue = ref('')
-const newRecordUnitId = ref<number | null>(null)
-const addingSaving = ref(false)
-
 const exerciseId = route.params.exerciseId as string
+
+// Устанавливаем активную вкладку из URL параметра
+const initializeTab = () => {
+  const tabParam = route.query.tab as string
+  if (tabParam === 'records') {
+    activeTab.value = 'records'
+  } else {
+    activeTab.value = 'comments'
+  }
+}
 
 const loadExerciseData = async () => {
   try {
@@ -120,7 +117,7 @@ const switchTab = (tab: 'comments' | 'records') => {
 
 const goBack = () => {
   hapticFeedback('impact')
-  router.back()
+  router.push({ name: 'category-exercises', params: { categoryId: exercise.value?.category_id } }) 
 }
 
 const openCommentDetail = (comment: ExerciseComment) => {
@@ -136,130 +133,23 @@ const addComment = () => {
 const addRecord = () => {
   hapticFeedback('impact')
   if (activeTab.value === 'records') {
-    openAddRecordModal()
+    openAddRecord()
   } else {
     addComment()
   }
 }
 
-const openAddRecordModal = () => {
+const openAddRecord = () => {
   hapticFeedback('impact')
-  newRecordName.value = ''
-  newRecordValue.value = ''
-  newRecordUnitId.value = null
-  showAddRecordModal.value = true
+  router.push({ name: 'add-record', params: { exerciseId } })
 }
 
-const closeAddRecordModal = () => {
+
+const openRecordDetail = (record: ExerciseRecord) => {
   hapticFeedback('impact')
-  showAddRecordModal.value = false
-  newRecordName.value = ''
-  newRecordValue.value = ''
-  newRecordUnitId.value = null
-  addingSaving.value = false
+  router.push({ name: 'record-detail', params: { recordId: record.id } })
 }
 
-const saveNewRecord = async () => {
-  if (!user.value?.id || !newRecordName.value.trim() || !newRecordValue.value || !newRecordUnitId.value) return
-  
-  try {
-    addingSaving.value = true
-    hapticFeedback('impact')
-    
-    const value = parseFloat(newRecordValue.value)
-    if (isNaN(value)) {
-      throw new Error('Некорректное значение')
-    }
-
-    const { data: newRecord, error: insertError } = await supabase
-      .from('exercise_records')
-      .insert({
-        exercise_id: exerciseId,
-        user_id: user.value.id,
-        name: newRecordName.value.trim(),
-        value: value,
-        measure_unit_id: newRecordUnitId.value.toString(),
-        state: 'current'
-      })
-      .select(`
-        *,
-        measurement_units (
-          name
-        )
-      `)
-      .single()
-
-    if (insertError) {
-      throw insertError
-    }
-
-    // Добавляем новый рекорд в локальный список
-    if (newRecord) {
-      records.value.unshift(newRecord)
-    }
-
-    closeAddRecordModal()
-  } catch (err: any) {
-    console.error('Error saving new record:', err)
-    hapticFeedback('error')
-    // TODO: Show error message to user
-  } finally {
-    addingSaving.value = false
-  }
-}
-
-const openEditModal = (record: ExerciseRecord) => {
-  hapticFeedback('impact')
-  editingRecord.value = record
-  editValue.value = record.value
-  showEditModal.value = true
-}
-
-const closeEditModal = () => {
-  hapticFeedback('impact')
-  showEditModal.value = false
-  editingRecord.value = null
-  editValue.value = null
-  saving.value = false
-}
-
-const saveRecord = async () => {
-  if (!editingRecord.value || !user.value?.id || editValue.value === null) return
-  
-  try {
-    saving.value = true
-    hapticFeedback('impact')
-    
-    const newValue = editValue.value
-    if (isNaN(newValue)) {
-      throw new Error('Некорректное значение')
-    }
-
-    const { error: updateError } = await supabase
-      .from('exercise_records')
-      .update({ value: newValue })
-      .eq('id', editingRecord.value.id)
-      .eq('user_id', user.value.id)
-
-    if (updateError) {
-      throw updateError
-    }
-
-    // Обновляем локальные данные
-    const recordIndex = records.value.findIndex(r => r.id === editingRecord.value!.id)
-    if (recordIndex !== -1) {
-      records.value[recordIndex].value = newValue
-    }
-
-    closeEditModal()
-  } catch (err: any) {
-    console.error('Error saving record:', err)
-    hapticFeedback('error')
-    // TODO: Show error message to user
-  } finally {
-    saving.value = false
-  }
-}
 
 const handleNumberKeypress = (event: KeyboardEvent) => {
   const char = event.key
@@ -285,6 +175,7 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
 }
 
 onMounted(() => {
+  initializeTab()
   loadExerciseData()
 })
 </script>
@@ -421,7 +312,7 @@ onMounted(() => {
                   <div
                     v-for="record in records"
                     :key="record.id"
-                    @click="openEditModal(record)"
+                    @click="openRecordDetail(record)"
                     class="bg-gray-50 rounded-2xl p-3 border border-gray-100 h-16 flex items-center justify-between cursor-pointer hover:bg-gray-100 active:scale-95 transition-all duration-200"
                     style="touch-action: manipulation;"
                   >
@@ -461,174 +352,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Edit Record Modal -->
-    <div 
-      v-if="showEditModal" 
-      class="fixed inset-0 bg-gray-900 bg-opacity-30 flex items-center justify-center z-50 p-4"
-      @click="closeEditModal"
-      style="touch-action: none;"
-    >
-      <div 
-        @click.stop
-        class="bg-white rounded-2xl p-8 w-full max-w-sm mx-auto shadow-xl min-h-[320px] flex flex-col"
-        style="touch-action: manipulation;"
-      >
-        <!-- Modal Header -->
-        <div class="text-center mb-6">
-          <h2 class="text-xl font-bold text-gray-900">Редактировать рекорд</h2>
-        </div>
 
-        <!-- Record Name -->
-        <div class="text-center mb-12 p-4 bg-gray-50 rounded-xl border border-gray-200">
-          <p class="text-black text-lg font-bold leading-tight break-words">{{ editingRecord?.name }}</p>
-        </div>
-
-        <!-- Value Input -->
-        <div class="mb-6">
-          <label class="block text-base font-semibold text-gray-800 mb-3">
-            Значение
-          </label>
-          <div class="relative">
-            <input
-              v-model="editValue"
-              type="number"
-              step="0.01"
-              class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-xl font-bold text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
-              :placeholder="editingRecord?.value?.toString()"
-              style="touch-action: manipulation;"
-              @focus="($event.target as HTMLInputElement)?.select()"
-              @keypress="handleNumberKeypress"
-            />
-            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 text-base font-medium">
-              {{ editingRecord?.measurement_units?.name || 'ед.' }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Spacer -->
-        <div class="flex-1"></div>
-
-        <!-- Action Buttons Container -->
-        <div class="pt-8">
-          <div class="flex gap-4">
-          <button
-            @click="closeEditModal"
-            :disabled="saving"
-            class="flex-1 py-4 px-5 bg-gray-100 text-gray-800 rounded-xl font-bold text-base hover:bg-gray-200 active:scale-95 transition-all duration-200 disabled:opacity-50"
-            style="touch-action: manipulation;"
-          >
-            Отмена
-          </button>
-          <button
-            @click="saveRecord"
-            :disabled="saving || editValue === null"
-            class="flex-1 py-4 px-5 bg-blue-500 text-white rounded-xl font-bold text-base hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            style="touch-action: manipulation;"
-          >
-            <div v-if="saving" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-            {{ saving ? 'Сохранение...' : 'Сохранить' }}
-          </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Record Modal -->
-    <div 
-      v-if="showAddRecordModal" 
-      class="fixed inset-0 bg-gray-900 bg-opacity-30 flex items-center justify-center z-50 p-4"
-      @click="closeAddRecordModal"
-      style="touch-action: none;"
-    >
-      <div 
-        @click.stop
-        class="bg-white rounded-2xl p-8 w-full max-w-sm mx-auto shadow-xl min-h-[400px] flex flex-col"
-        style="touch-action: manipulation;"
-      >
-        <!-- Modal Header -->
-        <div class="text-center mb-6">
-          <h2 class="text-xl font-bold text-gray-900">Добавить рекорд</h2>
-        </div>
-
-        <!-- Record Name Input -->
-        <div class="mb-6">
-          <label class="block text-base font-semibold text-gray-800 mb-3">
-            Название рекорда
-          </label>
-          <input
-            v-model="newRecordName"
-            type="text"
-            class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-lg font-medium text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors capitalize"
-            placeholder="Например: Максимальный вес"
-            style="touch-action: manipulation;"
-            @focus="($event.target as HTMLInputElement)?.select()"
-          />
-        </div>
-
-        <!-- Measurement Unit Select -->
-        <div class="mb-6">
-          <label class="block text-base font-semibold text-gray-800 mb-3">
-            Единица измерения
-          </label>
-          <select
-            v-model="newRecordUnitId"
-            class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-lg font-medium text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
-            style="touch-action: manipulation;"
-          >
-            <option value="" disabled>Выберите единицу</option>
-            <option 
-              v-for="unit in measurementUnits" 
-              :key="unit.id" 
-              :value="unit.id"
-            >
-              {{ unit.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Value Input -->
-        <div class="mb-6">
-          <label class="block text-base font-semibold text-gray-800 mb-3">
-            Значение
-          </label>
-          <input
-            v-model="newRecordValue"
-            type="number"
-            step="0.01"
-            class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-xl font-bold text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
-            placeholder="0"
-            style="touch-action: manipulation;"
-            @focus="($event.target as HTMLInputElement)?.select()"
-            @keypress="handleNumberKeypress"
-          />
-        </div>
-
-        <!-- Spacer -->
-        <div class="flex-1"></div>
-
-        <!-- Action Buttons Container -->
-        <div class="pt-8">
-          <div class="flex gap-4">
-            <button
-              @click="closeAddRecordModal"
-              :disabled="addingSaving"
-              class="flex-1 py-4 px-5 bg-gray-100 text-gray-800 rounded-xl font-bold text-base hover:bg-gray-200 active:scale-95 transition-all duration-200 disabled:opacity-50"
-              style="touch-action: manipulation;"
-            >
-              Отмена
-            </button>
-            <button
-              @click="saveNewRecord"
-              :disabled="addingSaving || !newRecordName.trim() || !newRecordValue || !newRecordUnitId"
-              class="flex-1 py-4 px-5 bg-blue-500 text-white rounded-xl font-bold text-base hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              style="touch-action: manipulation;"
-            >
-              <div v-if="addingSaving" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              {{ addingSaving ? 'Сохранение...' : 'Сохранить' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>

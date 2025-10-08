@@ -5,7 +5,9 @@ import AuthSuccessView from '../views/AuthSuccessView.vue'
 import ExerciseDetailView from '../views/ExerciseDetailView.vue'
 import MetconDetailView from '../views/MetconDetailView.vue'
 import CommentDetailView from '../views/CommentDetailView.vue'
+import RecordDetailView from '../views/RecordDetailView.vue'
 import AddCommentView from '../views/AddCommentView.vue'
+import AddRecordView from '../views/AddRecordView.vue'
 import UserDataForm from '../components/UserDataForm.vue'
 import WelcomeScreen from '../components/WelcomeScreen.vue'
 import ExercisesList from '../components/ExercisesList.vue'
@@ -62,9 +64,21 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/record/:recordId',
+      name: 'record-detail',
+      component: RecordDetailView,
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/exercise/:exerciseId/add-comment',
       name: 'add-comment',
       component: AddCommentView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/exercise/:exerciseId/add-record',
+      name: 'add-record',
+      component: AddRecordView,
       meta: { requiresAuth: true }
     },
   ],
