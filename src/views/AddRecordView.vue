@@ -26,6 +26,8 @@ const saving = ref(false)
 const error = ref<string | null>(null)
 const nameInputRef = ref<HTMLInputElement | null>(null)
 const valueInputRef = ref<HTMLInputElement | null>(null)
+const nameFieldRef = ref<HTMLDivElement | null>(null)
+const valueFieldRef = ref<HTMLDivElement | null>(null)
 const scrollContainerRef = ref<HTMLDivElement | null>(null)
 const isEditing = ref(false)
 const activeField = ref<'name' | 'value' | null>(null)
@@ -152,14 +154,14 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
 }
 
 // Универсальный обработчик фокуса для всех полей
-const handleFieldFocus = (fieldType: 'name' | 'value', element: HTMLElement | null) => {
+const handleFieldFocus = (fieldType: 'name' | 'value', containerElement: HTMLElement | null) => {
   isEditing.value = true
   activeField.value = fieldType
   
-  if (!element) return
+  if (!containerElement) return
   
-  // Сразу центрируем элемент
-  element.scrollIntoView({ 
+  // Сразу центрируем весь блок с заголовком
+  containerElement.scrollIntoView({ 
     behavior: 'smooth', 
     block: 'center',
     inline: 'nearest'
@@ -167,28 +169,28 @@ const handleFieldFocus = (fieldType: 'name' | 'value', element: HTMLElement | nu
   
   // После появления клавиатуры (обычно 300-400ms) делаем финальное позиционирование
   setTimeout(() => {
-    if (element && isEditing.value && activeField.value === fieldType) {
-      // Позиционируем поле в верхней части видимой области (над клавиатурой)
-      element.scrollIntoView({ 
+    if (containerElement && isEditing.value && activeField.value === fieldType) {
+      // Позиционируем блок в верхней части видимой области (над клавиатурой)
+      containerElement.scrollIntoView({ 
         behavior: 'smooth', 
         block: 'start',
         inline: 'nearest'
       })
       
-      // Небольшой отступ сверху для лучшей видимости
+      // Небольшой отступ сверху для лучшей видимости заголовка
       setTimeout(() => {
-        window.scrollBy({ top: -80, behavior: 'smooth' })
+        window.scrollBy({ top: -60, behavior: 'smooth' })
       }, 100)
     }
   }, 350)
 }
 
 const handleNameFocus = () => {
-  handleFieldFocus('name', nameInputRef.value)
+  handleFieldFocus('name', nameFieldRef.value)
 }
 
 const handleValueFocus = () => {
-  handleFieldFocus('value', valueInputRef.value)
+  handleFieldFocus('value', valueFieldRef.value)
 }
 
 const handleInputBlur = () => {
@@ -223,7 +225,7 @@ const checkMobile = () => {
 
 // Отслеживаем появление клавиатуры и корректируем позицию
 const handleViewportChange = () => {
-  if (!isEditing.value) return
+  if (!isEditing.value || !activeField.value) return
   
   const currentHeight = window.innerHeight
   const heightDifference = initialViewportHeight.value - currentHeight
@@ -231,16 +233,16 @@ const handleViewportChange = () => {
   // Если высота уменьшилась более чем на 150px - появилась клавиатура
   if (heightDifference > 150) {
     setTimeout(() => {
-      const activeElement = document.activeElement as HTMLElement
-      if (activeElement && (activeElement === nameInputRef.value || activeElement === valueInputRef.value)) {
-        activeElement.scrollIntoView({ 
+      const containerElement = activeField.value === 'name' ? nameFieldRef.value : valueFieldRef.value
+      if (containerElement) {
+        containerElement.scrollIntoView({ 
           behavior: 'smooth', 
           block: 'start',
           inline: 'nearest'
         })
-        // Отступ сверху для комфортного просмотра
+        // Отступ сверху для комфортного просмотра заголовка
         setTimeout(() => {
-          window.scrollBy({ top: -80, behavior: 'smooth' })
+          window.scrollBy({ top: -60, behavior: 'smooth' })
         }, 100)
       }
     }, 50)
@@ -339,7 +341,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Record Name Input -->
-            <div class="mb-6">
+            <div ref="nameFieldRef" class="mb-6">
               <h2 class="text-lg font-semibold text-gray-800 mb-2">Название рекорда</h2>
               <input
                 ref="nameInputRef"
@@ -377,7 +379,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Value Input -->
-            <div class="mb-6">
+            <div ref="valueFieldRef" class="mb-6">
               <h2 class="text-lg font-semibold text-gray-800 mb-2">Значение</h2>
               <div class="relative">
                 <input
