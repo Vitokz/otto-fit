@@ -24,6 +24,11 @@ const newRecordUnitId = ref<number | null>(null)
 const loading = ref(true)
 const saving = ref(false)
 const error = ref<string | null>(null)
+const nameInputRef = ref<HTMLInputElement | null>(null)
+const valueInputRef = ref<HTMLInputElement | null>(null)
+const scrollContainerRef = ref<HTMLDivElement | null>(null)
+const isEditing = ref(false)
+const activeField = ref<'name' | 'value' | null>(null)
 
 const exerciseId = route.params.exerciseId as string
 
@@ -111,13 +116,20 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
   const char = event.key
   const input = event.target as HTMLInputElement
   
-  // Разрешаем: цифры, точка, запятая, минус, backspace, delete, tab, escape, enter
+  // Enter закрывает клавиатуру
+  if (char === 'Enter') {
+    input.blur()
+    event.preventDefault()
+    return
+  }
+  
+  // Разрешаем: цифры, точка, запятая, минус, backspace, delete, tab, escape, стрелки
   if (
     /[0-9]/.test(char) || 
     char === '.' || 
     char === ',' || 
     char === '-' ||
-    ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(char)
+    ['Backspace', 'Delete', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(char)
   ) {
     // Дополнительная проверка для точки/запятой - только одна на поле
     if ((char === '.' || char === ',') && input.value.includes('.')) {
@@ -128,6 +140,54 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
   
   // Блокируем все остальные символы
   event.preventDefault()
+}
+
+const handleNameFocus = () => {
+  isEditing.value = true
+  activeField.value = 'name'
+  setTimeout(() => {
+    scrollToInput(nameInputRef.value)
+  }, 300)
+}
+
+const handleValueFocus = () => {
+  isEditing.value = true
+  activeField.value = 'value'
+  setTimeout(() => {
+    scrollToInput(valueInputRef.value)
+  }, 300)
+}
+
+const handleInputBlur = () => {
+  isEditing.value = false
+  activeField.value = null
+}
+
+const scrollToInput = (input: HTMLInputElement | null) => {
+  if (input && scrollContainerRef.value) {
+    const inputRect = input.getBoundingClientRect()
+    const containerRect = scrollContainerRef.value.getBoundingClientRect()
+    
+    // Скроллим так, чтобы поле было видно выше клавиатуры
+    const scrollOffset = inputRect.top - containerRect.top - 100
+    scrollContainerRef.value.scrollTo({
+      top: scrollContainerRef.value.scrollTop + scrollOffset,
+      behavior: 'smooth'
+    })
+  }
+}
+
+const handleContainerClick = (event: MouseEvent) => {
+  // Если клик был вне input, закрываем клавиатуру
+  if (nameInputRef.value && event.target !== nameInputRef.value && 
+      valueInputRef.value && event.target !== valueInputRef.value) {
+    if (nameInputRef.value === document.activeElement) {
+      nameInputRef.value.blur()
+    }
+    if (valueInputRef.value === document.activeElement) {
+      valueInputRef.value.blur()
+    }
+  }
 }
 
 onMounted(() => {
@@ -187,7 +247,12 @@ onMounted(() => {
         <!-- Main Content -->
         <div v-else class="flex-1 flex flex-col min-h-0">
           <!-- Scrollable Content -->
-          <div class="flex-1 overflow-y-auto p-6" style="touch-action: pan-y;">
+          <div 
+            ref="scrollContainerRef"
+            class="flex-1 overflow-y-auto p-6" 
+            style="touch-action: pan-y;"
+            @click="handleContainerClick"
+          >
             <!-- Exercise Name -->
             <div class="mb-6">
               <h2 class="text-lg font-semibold text-gray-800 mb-2">Упражнение</h2>
@@ -200,12 +265,15 @@ onMounted(() => {
             <div class="mb-6">
               <h2 class="text-lg font-semibold text-gray-800 mb-2">Название рекорда</h2>
               <input
+                ref="nameInputRef"
                 v-model="newRecordName"
                 type="text"
                 class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-lg font-medium text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors capitalize"
                 placeholder="Например: Максимальный вес"
                 style="touch-action: manipulation;"
-                @focus="($event.target as HTMLInputElement)?.select()"
+                @focus="handleNameFocus"
+                @blur="handleInputBlur"
+                @click.stop
               />
             </div>
 
@@ -233,24 +301,31 @@ onMounted(() => {
               <h2 class="text-lg font-semibold text-gray-800 mb-2">Значение</h2>
               <div class="relative">
                 <input
+                  ref="valueInputRef"
                   v-model="newRecordValue"
                   type="number"
                   step="0.01"
+                  inputmode="decimal"
                   class="w-full px-5 py-6 border-2 border-gray-300 rounded-xl text-3xl font-bold text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
                   placeholder="0"
                   style="touch-action: manipulation;"
-                  @focus="($event.target as HTMLInputElement)?.select()"
+                  @focus="handleValueFocus"
+                  @blur="handleInputBlur"
+                  @click.stop
                   @keypress="handleNumberKeypress"
                 />
-                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 text-lg font-medium">
+                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 text-lg font-medium pointer-events-none">
                   {{ measurementUnits.find(u => u.id === newRecordUnitId?.toString())?.name || 'ед.' }}
                 </div>
               </div>
             </div>
+            
+            <!-- Добавляем отступ для клавиатуры -->
+            <div class="h-64"></div>
           </div>
 
-          <!-- Fixed Action Buttons -->
-          <div class="p-6 pt-4 border-t border-gray-100 bg-white">
+          <!-- Fixed Action Buttons - скрываем в режиме редактирования -->
+          <div v-if="!isEditing" class="p-6 pt-4 border-t border-gray-100 bg-white">
             <div class="flex gap-4">
               <button
                 @click="goBack"
