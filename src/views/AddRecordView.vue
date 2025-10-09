@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
@@ -142,51 +142,53 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
   event.preventDefault()
 }
 
+const isMobile = ref(false)
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+}
+
 const handleNameFocus = () => {
   isEditing.value = true
   activeField.value = 'name'
-  // Даем больше времени для появления клавиатуры
-  setTimeout(() => {
-    scrollToInput(nameInputRef.value)
-  }, 500)
+  
+  if (isMobile.value) {
+    // На мобильных устройствах просто скроллим к началу поля
+    setTimeout(() => {
+      if (nameInputRef.value) {
+        nameInputRef.value.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        })
+      }
+    }, 300)
+  }
 }
 
 const handleValueFocus = () => {
   isEditing.value = true
   activeField.value = 'value'
-  // Даем больше времени для появления клавиатуры
-  setTimeout(() => {
-    scrollToInput(valueInputRef.value)
-  }, 500)
+  
+  if (isMobile.value) {
+    // На мобильных устройствах скроллим к полю и позиционируем его выше клавиатуры
+    setTimeout(() => {
+      if (valueInputRef.value) {
+        // Позиционируем поле в верхней части экрана
+        const inputRect = valueInputRef.value.getBoundingClientRect()
+        const scrollTop = window.pageYOffset + inputRect.top - 150 // 150px от верха экрана
+        
+        window.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth'
+        })
+      }
+    }, 300)
+  }
 }
 
 const handleInputBlur = () => {
   isEditing.value = false
   activeField.value = null
-}
-
-const scrollToInput = (input: HTMLInputElement | null) => {
-  if (input && scrollContainerRef.value) {
-    // Ждем еще немного для стабилизации клавиатуры
-    setTimeout(() => {
-      const inputRect = input.getBoundingClientRect()
-      const containerRect = scrollContainerRef.value!.getBoundingClientRect()
-      
-      // Вычисляем позицию так, чтобы поле было в верхней трети экрана
-      const viewportHeight = window.innerHeight
-      const targetTop = viewportHeight * 0.3 // 30% от высоты экрана
-      const currentTop = inputRect.top
-      
-      // Если поле слишком низко, скроллим вверх
-      if (currentTop > targetTop) {
-        const scrollOffset = currentTop - targetTop
-        scrollContainerRef.value!.scrollTo({
-          top: scrollContainerRef.value!.scrollTop + scrollOffset,
-          behavior: 'smooth'
-        })
-      }
-    }, 100)
-  }
 }
 
 const handleContainerClick = (event: MouseEvent) => {
@@ -203,7 +205,15 @@ const handleContainerClick = (event: MouseEvent) => {
 }
 
 onMounted(() => {
+  checkMobile()
   loadData()
+  
+  // Слушаем изменения размера окна
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
 })
 </script>
 
@@ -336,8 +346,8 @@ onMounted(() => {
             <div class="h-64"></div>
           </div>
 
-          <!-- Fixed Action Buttons - скрываем в режиме редактирования -->
-          <div v-if="!isEditing" class="p-6 pt-4 border-t border-gray-100 bg-white">
+          <!-- Fixed Action Buttons - скрываем в режиме редактирования на мобильных -->
+          <div v-if="!isEditing || !isMobile" class="p-6 pt-4 border-t border-gray-100 bg-white">
             <div class="flex gap-4">
               <button
                 @click="goBack"
