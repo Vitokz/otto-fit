@@ -20,6 +20,8 @@ const editedValue = ref<number | null>(null)
 const loading = ref(true)
 const saving = ref(false)
 const error = ref<string | null>(null)
+const inputRef = ref<HTMLInputElement | null>(null)
+const scrollContainerRef = ref<HTMLDivElement | null>(null)
 
 const recordId = route.params.recordId as string
 
@@ -113,13 +115,20 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
   const char = event.key
   const input = event.target as HTMLInputElement
   
-  // Разрешаем: цифры, точка, запятая, минус, backspace, delete, tab, escape, enter
+  // Enter закрывает клавиатуру
+  if (char === 'Enter') {
+    inputRef.value?.blur()
+    event.preventDefault()
+    return
+  }
+  
+  // Разрешаем: цифры, точка, запятая, минус, backspace, delete, tab, escape, стрелки
   if (
     /[0-9]/.test(char) || 
     char === '.' || 
     char === ',' || 
     char === '-' ||
-    ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(char)
+    ['Backspace', 'Delete', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(char)
   ) {
     // Дополнительная проверка для точки/запятой - только одна на поле
     if ((char === '.' || char === ',') && input.value.includes('.')) {
@@ -130,6 +139,30 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
   
   // Блокируем все остальные символы
   event.preventDefault()
+}
+
+const handleInputFocus = () => {
+  // Даем клавиатуре время появиться, затем скроллим к полю
+  setTimeout(() => {
+    if (inputRef.value && scrollContainerRef.value) {
+      const inputRect = inputRef.value.getBoundingClientRect()
+      const containerRect = scrollContainerRef.value.getBoundingClientRect()
+      
+      // Скроллим так, чтобы поле было видно выше клавиатуры
+      const scrollOffset = inputRect.top - containerRect.top - 20
+      scrollContainerRef.value.scrollBy({
+        top: scrollOffset,
+        behavior: 'smooth'
+      })
+    }
+  }, 300)
+}
+
+const handleContainerClick = (event: MouseEvent) => {
+  // Если клик был вне input, закрываем клавиатуру
+  if (inputRef.value && event.target !== inputRef.value) {
+    inputRef.value.blur()
+  }
 }
 
 onMounted(() => {
@@ -189,7 +222,12 @@ onMounted(() => {
         <!-- Main Content -->
         <div v-else-if="record" class="flex-1 flex flex-col min-h-0">
           <!-- Scrollable Content -->
-          <div class="flex-1 overflow-y-auto p-6" style="touch-action: pan-y;">
+          <div 
+            ref="scrollContainerRef"
+            class="flex-1 overflow-y-auto p-6" 
+            style="touch-action: pan-y;"
+            @click="handleContainerClick"
+          >
             <!-- Exercise Name -->
             <div class="mb-6">
               <h2 class="text-lg font-semibold text-gray-800 mb-2">Упражнение</h2>
@@ -211,20 +249,26 @@ onMounted(() => {
               <h3 class="text-lg font-semibold text-gray-800 mb-3">Значение</h3>
               <div class="relative">
                 <input
+                  ref="inputRef"
                   v-model="editedValue"
                   type="number"
                   step="0.01"
+                  inputmode="decimal"
                   class="w-full px-5 py-6 border-2 border-gray-300 rounded-xl text-3xl font-bold text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
                   :placeholder="record.value?.toString() || '0'"
                   style="touch-action: manipulation;"
-                  @focus="($event.target as HTMLInputElement)?.select()"
+                  @focus="handleInputFocus"
+                  @click.stop
                   @keypress="handleNumberKeypress"
                 />
-                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 text-lg font-medium">
+                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 text-lg font-medium pointer-events-none">
                   {{ record.measurement_units?.name || 'ед.' }}
                 </div>
               </div>
             </div>
+            
+            <!-- Добавляем отступ для клавиатуры -->
+            <div class="h-64"></div>
           </div>
 
           <!-- Fixed Action Buttons -->
