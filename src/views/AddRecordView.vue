@@ -156,13 +156,20 @@ const handleFieldFocus = (fieldType: 'name' | 'value', element: HTMLElement | nu
   isEditing.value = true
   activeField.value = fieldType
   
-  // Даем время клавиатуре появиться, затем центрируем поле
+  // Даем время клавиатуре появиться, затем позиционируем поле так, чтобы оно было полностью видно
   setTimeout(() => {
     if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center',
-        inline: 'nearest'
+      const elementRect = element.getBoundingClientRect()
+      const viewportHeight = window.innerHeight
+      
+      // Вычисляем позицию так, чтобы поле было в верхней трети экрана (выше клавиатуры)
+      const targetY = viewportHeight * 0.3 // 30% от высоты экрана от верха
+      const currentY = window.pageYOffset + elementRect.top
+      const scrollToY = currentY - targetY
+      
+      window.scrollTo({
+        top: Math.max(0, scrollToY), // Не скроллим выше начала страницы
+        behavior: 'smooth'
       })
     }
   }, 300)
@@ -174,6 +181,31 @@ const handleNameFocus = () => {
 
 const handleValueFocus = () => {
   handleFieldFocus('value', valueInputRef.value)
+}
+
+// Обработчики кликов для полей - сразу фокусируем и выделяем текст
+const handleNameClick = () => {
+  if (nameInputRef.value) {
+    nameInputRef.value.focus()
+    // Выделяем весь текст для быстрого редактирования
+    setTimeout(() => {
+      if (nameInputRef.value) {
+        nameInputRef.value.select()
+      }
+    }, 100)
+  }
+}
+
+const handleValueClick = () => {
+  if (valueInputRef.value) {
+    valueInputRef.value.focus()
+    // Выделяем весь текст для быстрого редактирования
+    setTimeout(() => {
+      if (valueInputRef.value) {
+        valueInputRef.value.select()
+      }
+    }, 100)
+  }
 }
 
 const handleInputBlur = () => {
@@ -200,21 +232,60 @@ const handleContainerClick = (event: MouseEvent) => {
 }
 
 const isMobile = ref(false)
+const initialViewportHeight = ref(0)
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+}
+
+// Отслеживаем изменения высоты viewport для определения появления клавиатуры
+const handleViewportChange = () => {
+  const currentHeight = window.innerHeight
+  const heightDifference = initialViewportHeight.value - currentHeight
+  
+  // Если высота уменьшилась более чем на 150px, значит появилась клавиатура
+  if (heightDifference > 150 && isEditing.value) {
+    // Дополнительно скроллим чтобы поле было точно видно
+    setTimeout(() => {
+      const activeElement = document.activeElement as HTMLElement
+      if (activeElement && (activeElement === nameInputRef.value || activeElement === valueInputRef.value)) {
+        const elementRect = activeElement.getBoundingClientRect()
+        const targetY = window.innerHeight * 0.25 // Еще выше позиционируем
+        
+        if (elementRect.top > targetY) {
+          const scrollToY = window.pageYOffset + (elementRect.top - targetY)
+          window.scrollTo({
+            top: scrollToY,
+            behavior: 'smooth'
+          })
+        }
+      }
+    }, 100)
+  }
 }
 
 onMounted(() => {
   checkMobile()
   loadData()
   
-  // Слушаем изменения размера окна
+  // Запоминаем изначальную высоту viewport
+  initialViewportHeight.value = window.innerHeight
+  
+  // Слушаем изменения размера окна и высоты viewport
   window.addEventListener('resize', checkMobile)
+  window.addEventListener('resize', handleViewportChange)
+  
+  // Также слушаем изменения высоты viewport (для мобильных браузеров)
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      initialViewportHeight.value = window.innerHeight
+    }, 100)
+  })
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
+  window.removeEventListener('resize', handleViewportChange)
 })
 </script>
 
@@ -291,13 +362,14 @@ onUnmounted(() => {
                 ref="nameInputRef"
                 v-model="newRecordName"
                 type="text"
+                inputmode="text"
                 class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-lg font-medium text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors capitalize"
                 placeholder="Например: Максимальный вес"
                 style="touch-action: manipulation;"
                 @focus="handleNameFocus"
                 @blur="handleInputBlur"
                 @keypress="handleEnterKey"
-                @click.stop
+                @click="handleNameClick"
               />
             </div>
 
@@ -308,6 +380,8 @@ onUnmounted(() => {
                 v-model="newRecordUnitId"
                 class="w-full px-5 py-4 border-2 border-gray-300 rounded-xl text-lg font-medium text-center text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
                 style="touch-action: manipulation;"
+                @focus="isEditing = true"
+                @blur="isEditing = false"
               >
                 <option value="" disabled>Выберите единицу</option>
                 <option 
@@ -335,7 +409,7 @@ onUnmounted(() => {
                   style="touch-action: manipulation;"
                   @focus="handleValueFocus"
                   @blur="handleInputBlur"
-                  @click.stop
+                  @click="handleValueClick"
                   @keypress="handleNumberKeypress"
                 />
                 <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 text-lg font-medium pointer-events-none">
@@ -344,8 +418,8 @@ onUnmounted(() => {
               </div>
             </div>
             
-            <!-- Добавляем отступ для клавиатуры -->
-            <div class="h-64"></div>
+            <!-- Добавляем отступ для клавиатуры - увеличиваем для полной видимости -->
+            <div class="h-96"></div>
           </div>
 
           <!-- Fixed Action Buttons - скрываем в режиме редактирования на мобильных -->
