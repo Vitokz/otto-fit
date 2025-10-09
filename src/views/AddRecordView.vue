@@ -156,23 +156,31 @@ const handleFieldFocus = (fieldType: 'name' | 'value', element: HTMLElement | nu
   isEditing.value = true
   activeField.value = fieldType
   
-  // Даем время клавиатуре появиться, затем позиционируем поле так, чтобы оно было полностью видно
+  if (!element) return
+  
+  // Сразу центрируем элемент
+  element.scrollIntoView({ 
+    behavior: 'smooth', 
+    block: 'center',
+    inline: 'nearest'
+  })
+  
+  // После появления клавиатуры (обычно 300-400ms) делаем финальное позиционирование
   setTimeout(() => {
-    if (element) {
-      const elementRect = element.getBoundingClientRect()
-      const viewportHeight = window.innerHeight
-      
-      // Вычисляем позицию так, чтобы поле было в верхней трети экрана (выше клавиатуры)
-      const targetY = viewportHeight * 0.3 // 30% от высоты экрана от верха
-      const currentY = window.pageYOffset + elementRect.top
-      const scrollToY = currentY - targetY
-      
-      window.scrollTo({
-        top: Math.max(0, scrollToY), // Не скроллим выше начала страницы
-        behavior: 'smooth'
+    if (element && isEditing.value && activeField.value === fieldType) {
+      // Позиционируем поле в верхней части видимой области (над клавиатурой)
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
       })
+      
+      // Небольшой отступ сверху для лучшей видимости
+      setTimeout(() => {
+        window.scrollBy({ top: -80, behavior: 'smooth' })
+      }, 100)
     }
-  }, 300)
+  }, 350)
 }
 
 const handleNameFocus = () => {
@@ -181,31 +189,6 @@ const handleNameFocus = () => {
 
 const handleValueFocus = () => {
   handleFieldFocus('value', valueInputRef.value)
-}
-
-// Обработчики кликов для полей - сразу фокусируем и выделяем текст
-const handleNameClick = () => {
-  if (nameInputRef.value) {
-    nameInputRef.value.focus()
-    // Выделяем весь текст для быстрого редактирования
-    setTimeout(() => {
-      if (nameInputRef.value) {
-        nameInputRef.value.select()
-      }
-    }, 100)
-  }
-}
-
-const handleValueClick = () => {
-  if (valueInputRef.value) {
-    valueInputRef.value.focus()
-    // Выделяем весь текст для быстрого редактирования
-    setTimeout(() => {
-      if (valueInputRef.value) {
-        valueInputRef.value.select()
-      }
-    }, 100)
-  }
 }
 
 const handleInputBlur = () => {
@@ -238,29 +221,29 @@ const checkMobile = () => {
   isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 }
 
-// Отслеживаем изменения высоты viewport для определения появления клавиатуры
+// Отслеживаем появление клавиатуры и корректируем позицию
 const handleViewportChange = () => {
+  if (!isEditing.value) return
+  
   const currentHeight = window.innerHeight
   const heightDifference = initialViewportHeight.value - currentHeight
   
-  // Если высота уменьшилась более чем на 150px, значит появилась клавиатура
-  if (heightDifference > 150 && isEditing.value) {
-    // Дополнительно скроллим чтобы поле было точно видно
+  // Если высота уменьшилась более чем на 150px - появилась клавиатура
+  if (heightDifference > 150) {
     setTimeout(() => {
       const activeElement = document.activeElement as HTMLElement
       if (activeElement && (activeElement === nameInputRef.value || activeElement === valueInputRef.value)) {
-        const elementRect = activeElement.getBoundingClientRect()
-        const targetY = window.innerHeight * 0.25 // Еще выше позиционируем
-        
-        if (elementRect.top > targetY) {
-          const scrollToY = window.pageYOffset + (elementRect.top - targetY)
-          window.scrollTo({
-            top: scrollToY,
-            behavior: 'smooth'
-          })
-        }
+        activeElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        })
+        // Отступ сверху для комфортного просмотра
+        setTimeout(() => {
+          window.scrollBy({ top: -80, behavior: 'smooth' })
+        }, 100)
       }
-    }, 100)
+    }, 50)
   }
 }
 
@@ -369,7 +352,6 @@ onUnmounted(() => {
                 @focus="handleNameFocus"
                 @blur="handleInputBlur"
                 @keypress="handleEnterKey"
-                @click="handleNameClick"
               />
             </div>
 
@@ -409,7 +391,6 @@ onUnmounted(() => {
                   style="touch-action: manipulation;"
                   @focus="handleValueFocus"
                   @blur="handleInputBlur"
-                  @click="handleValueClick"
                   @keypress="handleNumberKeypress"
                 />
                 <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 text-lg font-medium pointer-events-none">
