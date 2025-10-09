@@ -112,6 +112,15 @@ const saveNewRecord = async () => {
   }
 }
 
+// Универсальный обработчик Enter для закрытия клавиатуры
+const handleEnterKey = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    const input = event.target as HTMLInputElement
+    input.blur()
+    event.preventDefault()
+  }
+}
+
 const handleNumberKeypress = (event: KeyboardEvent) => {
   const char = event.key
   const input = event.target as HTMLInputElement
@@ -142,48 +151,29 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
   event.preventDefault()
 }
 
-const isMobile = ref(false)
-
-const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+// Универсальный обработчик фокуса для всех полей
+const handleFieldFocus = (fieldType: 'name' | 'value', element: HTMLElement | null) => {
+  isEditing.value = true
+  activeField.value = fieldType
+  
+  // Даем время клавиатуре появиться, затем центрируем поле
+  setTimeout(() => {
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'nearest'
+      })
+    }
+  }, 300)
 }
 
 const handleNameFocus = () => {
-  isEditing.value = true
-  activeField.value = 'name'
-  
-  if (isMobile.value) {
-    // На мобильных устройствах просто скроллим к началу поля
-    setTimeout(() => {
-      if (nameInputRef.value) {
-        nameInputRef.value.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        })
-      }
-    }, 300)
-  }
+  handleFieldFocus('name', nameInputRef.value)
 }
 
 const handleValueFocus = () => {
-  isEditing.value = true
-  activeField.value = 'value'
-  
-  if (isMobile.value) {
-    // На мобильных устройствах скроллим к полю и позиционируем его выше клавиатуры
-    setTimeout(() => {
-      if (valueInputRef.value) {
-        // Позиционируем поле в верхней части экрана
-        const inputRect = valueInputRef.value.getBoundingClientRect()
-        const scrollTop = window.pageYOffset + inputRect.top - 150 // 150px от верха экрана
-        
-        window.scrollTo({
-          top: scrollTop,
-          behavior: 'smooth'
-        })
-      }
-    }, 300)
-  }
+  handleFieldFocus('value', valueInputRef.value)
 }
 
 const handleInputBlur = () => {
@@ -191,17 +181,28 @@ const handleInputBlur = () => {
   activeField.value = null
 }
 
+// Улучшенный обработчик клика вне полей
 const handleContainerClick = (event: MouseEvent) => {
-  // Если клик был вне input, закрываем клавиатуру
-  if (nameInputRef.value && event.target !== nameInputRef.value && 
-      valueInputRef.value && event.target !== valueInputRef.value) {
-    if (nameInputRef.value === document.activeElement) {
-      nameInputRef.value.blur()
-    }
-    if (valueInputRef.value === document.activeElement) {
-      valueInputRef.value.blur()
+  const target = event.target as HTMLElement
+  
+  // Проверяем, не является ли клик по input или select элементу
+  if (
+    target !== nameInputRef.value && 
+    target !== valueInputRef.value &&
+    !target.closest('select') &&
+    !target.closest('input')
+  ) {
+    // Закрываем клавиатуру если какое-то поле в фокусе
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
     }
   }
+}
+
+const isMobile = ref(false)
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 }
 
 onMounted(() => {
@@ -295,6 +296,7 @@ onUnmounted(() => {
                 style="touch-action: manipulation;"
                 @focus="handleNameFocus"
                 @blur="handleInputBlur"
+                @keypress="handleEnterKey"
                 @click.stop
               />
             </div>
