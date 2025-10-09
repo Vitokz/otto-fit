@@ -145,10 +145,10 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
 const handleInputFocus = () => {
   isEditing.value = true
   
-  // Даем клавиатуре время появиться, затем скроллим к полю
+  // Даем больше времени для появления клавиатуры
   setTimeout(() => {
     scrollToInput()
-  }, 300)
+  }, 500)
 }
 
 const handleInputBlur = () => {
@@ -157,15 +157,25 @@ const handleInputBlur = () => {
 
 const scrollToInput = () => {
   if (inputRef.value && scrollContainerRef.value) {
-    const inputRect = inputRef.value.getBoundingClientRect()
-    const containerRect = scrollContainerRef.value.getBoundingClientRect()
-    
-    // Скроллим так, чтобы поле было видно выше клавиатуры
-    const scrollOffset = inputRect.top - containerRect.top - 100
-    scrollContainerRef.value.scrollTo({
-      top: scrollContainerRef.value.scrollTop + scrollOffset,
-      behavior: 'smooth'
-    })
+    // Ждем еще немного для стабилизации клавиатуры
+    setTimeout(() => {
+      const inputRect = inputRef.value!.getBoundingClientRect()
+      const containerRect = scrollContainerRef.value!.getBoundingClientRect()
+      
+      // Вычисляем позицию так, чтобы поле было в верхней трети экрана
+      const viewportHeight = window.innerHeight
+      const targetTop = viewportHeight * 0.3 // 30% от высоты экрана
+      const currentTop = inputRect.top
+      
+      // Если поле слишком низко, скроллим вверх
+      if (currentTop > targetTop) {
+        const scrollOffset = currentTop - targetTop
+        scrollContainerRef.value!.scrollTo({
+          top: scrollContainerRef.value!.scrollTop + scrollOffset,
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
   }
 }
 
