@@ -22,6 +22,7 @@ const saving = ref(false)
 const error = ref<string | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
 const scrollContainerRef = ref<HTMLDivElement | null>(null)
+const isEditing = ref(false)
 
 const recordId = route.params.recordId as string
 
@@ -142,20 +143,30 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
 }
 
 const handleInputFocus = () => {
+  isEditing.value = true
+  
   // Даем клавиатуре время появиться, затем скроллим к полю
   setTimeout(() => {
-    if (inputRef.value && scrollContainerRef.value) {
-      const inputRect = inputRef.value.getBoundingClientRect()
-      const containerRect = scrollContainerRef.value.getBoundingClientRect()
-      
-      // Скроллим так, чтобы поле было видно выше клавиатуры
-      const scrollOffset = inputRect.top - containerRect.top - 20
-      scrollContainerRef.value.scrollBy({
-        top: scrollOffset,
-        behavior: 'smooth'
-      })
-    }
+    scrollToInput()
   }, 300)
+}
+
+const handleInputBlur = () => {
+  isEditing.value = false
+}
+
+const scrollToInput = () => {
+  if (inputRef.value && scrollContainerRef.value) {
+    const inputRect = inputRef.value.getBoundingClientRect()
+    const containerRect = scrollContainerRef.value.getBoundingClientRect()
+    
+    // Скроллим так, чтобы поле было видно выше клавиатуры
+    const scrollOffset = inputRect.top - containerRect.top - 100
+    scrollContainerRef.value.scrollTo({
+      top: scrollContainerRef.value.scrollTop + scrollOffset,
+      behavior: 'smooth'
+    })
+  }
 }
 
 const handleContainerClick = (event: MouseEvent) => {
@@ -258,6 +269,7 @@ onMounted(() => {
                   :placeholder="record.value?.toString() || '0'"
                   style="touch-action: manipulation;"
                   @focus="handleInputFocus"
+                  @blur="handleInputBlur"
                   @click.stop
                   @keypress="handleNumberKeypress"
                 />
@@ -271,8 +283,8 @@ onMounted(() => {
             <div class="h-64"></div>
           </div>
 
-          <!-- Fixed Action Buttons -->
-          <div class="p-6 pt-4 border-t border-gray-100 bg-white">
+          <!-- Fixed Action Buttons - скрываем в режиме редактирования -->
+          <div v-if="!isEditing" class="p-6 pt-4 border-t border-gray-100 bg-white">
             <div class="flex gap-4">
               <button
                 @click="goBack"
