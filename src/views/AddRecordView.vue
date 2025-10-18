@@ -160,10 +160,17 @@ const handleFieldFocus = (fieldType: 'name' | 'value', containerElement: HTMLEle
   
   if (!containerElement) return
   
-  // Ждем появления клавиатуры, затем позиционируем поле
+  // Сначала позиционируем поле, затем ждем появления клавиатуры
+  containerElement.scrollIntoView({ 
+    behavior: 'smooth', 
+    block: 'start',
+    inline: 'nearest'
+  })
+  
+  // Ждем завершения скролла, затем корректируем позицию после появления клавиатуры
   setTimeout(() => {
     if (containerElement && isEditing.value && activeField.value === fieldType) {
-      // Позиционируем блок в верхней части видимой области (над клавиатурой)
+      // Дополнительная корректировка позиции после появления клавиатуры
       containerElement.scrollIntoView({ 
         behavior: 'smooth', 
         block: 'start',
@@ -175,7 +182,7 @@ const handleFieldFocus = (fieldType: 'name' | 'value', containerElement: HTMLEle
         window.scrollBy({ top: -60, behavior: 'smooth' })
       }, 100)
     }
-  }, 400)
+  }, 500)
 }
 
 const handleNameFocus = () => {
@@ -184,6 +191,19 @@ const handleNameFocus = () => {
 
 const handleValueFocus = () => {
   handleFieldFocus('value', valueFieldRef.value)
+}
+
+// Обработчики клика по полям для принудительного фокуса
+const handleNameClick = () => {
+  if (nameInputRef.value) {
+    nameInputRef.value.focus()
+  }
+}
+
+const handleValueClick = () => {
+  if (valueInputRef.value) {
+    valueInputRef.value.focus()
+  }
 }
 
 const handleInputBlur = () => {
@@ -195,12 +215,14 @@ const handleInputBlur = () => {
 const handleContainerClick = (event: MouseEvent) => {
   const target = event.target as HTMLElement
   
-  // Проверяем, не является ли клик по input или select элементу
+  // Проверяем, не является ли клик по input, select или их контейнерам
   if (
     target !== nameInputRef.value && 
     target !== valueInputRef.value &&
     !target.closest('select') &&
-    !target.closest('input')
+    !target.closest('input') &&
+    !target.closest('[ref="nameFieldRef"]') &&
+    !target.closest('[ref="valueFieldRef"]')
   ) {
     // Закрываем клавиатуру если какое-то поле в фокусе
     if (document.activeElement instanceof HTMLElement) {
@@ -333,7 +355,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Record Name Input -->
-            <div ref="nameFieldRef" class="mb-6">
+            <div ref="nameFieldRef" class="mb-6" @click="handleNameClick">
               <h2 class="text-lg font-semibold text-gray-800 mb-2">Название рекорда</h2>
               <input
                 ref="nameInputRef"
@@ -371,7 +393,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Value Input -->
-            <div ref="valueFieldRef" class="mb-6">
+            <div ref="valueFieldRef" class="mb-6" @click="handleValueClick">
               <h2 class="text-lg font-semibold text-gray-800 mb-2">Значение</h2>
               <div class="relative">
                 <input
