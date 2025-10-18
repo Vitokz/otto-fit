@@ -160,14 +160,7 @@ const handleFieldFocus = (fieldType: 'name' | 'value', containerElement: HTMLEle
   
   if (!containerElement) return
   
-  // Сразу центрируем весь блок с заголовком
-  containerElement.scrollIntoView({ 
-    behavior: 'smooth', 
-    block: 'center',
-    inline: 'nearest'
-  })
-  
-  // После появления клавиатуры (обычно 300-400ms) делаем финальное позиционирование
+  // Ждем появления клавиатуры, затем позиционируем поле
   setTimeout(() => {
     if (containerElement && isEditing.value && activeField.value === fieldType) {
       // Позиционируем блок в верхней части видимой области (над клавиатурой)
@@ -182,7 +175,7 @@ const handleFieldFocus = (fieldType: 'name' | 'value', containerElement: HTMLEle
         window.scrollBy({ top: -60, behavior: 'smooth' })
       }, 100)
     }
-  }, 350)
+  }, 400)
 }
 
 const handleNameFocus = () => {
@@ -232,20 +225,19 @@ const handleViewportChange = () => {
   
   // Если высота уменьшилась более чем на 150px - появилась клавиатура
   if (heightDifference > 150) {
-    setTimeout(() => {
-      const containerElement = activeField.value === 'name' ? nameFieldRef.value : valueFieldRef.value
-      if (containerElement) {
-        containerElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start',
-          inline: 'nearest'
-        })
-        // Отступ сверху для комфортного просмотра заголовка
-        setTimeout(() => {
-          window.scrollBy({ top: -60, behavior: 'smooth' })
-        }, 100)
-      }
-    }, 50)
+    const containerElement = activeField.value === 'name' ? nameFieldRef.value : valueFieldRef.value
+    if (containerElement) {
+      // Позиционируем поле в верхней части видимой области
+      containerElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      })
+      // Отступ сверху для комфортного просмотра заголовка
+      setTimeout(() => {
+        window.scrollBy({ top: -60, behavior: 'smooth' })
+      }, 100)
+    }
   }
 }
 
@@ -401,8 +393,8 @@ onUnmounted(() => {
               </div>
             </div>
             
-            <!-- Добавляем отступ для клавиатуры - увеличиваем для полной видимости -->
-            <div class="h-96"></div>
+            <!-- Добавляем небольшой отступ для клавиатуры -->
+            <div class="h-20"></div>
           </div>
 
           <!-- Fixed Action Buttons - скрываем в режиме редактирования на мобильных -->
