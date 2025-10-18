@@ -61,11 +61,12 @@ export const useFormKeyboard = () => {
     return (event: MouseEvent) => {
       const target = event.target as HTMLElement
       
-      // Проверяем, не является ли клик по input, select или их контейнерам
+      // Проверяем, не является ли клик по input, select, textarea или их контейнерам
       const isClickOnField = inputRefs.some(ref => target === ref.value) ||
         fieldRefs.some(ref => target.closest(`[ref="${ref.value?.getAttribute?.('ref') || ref.value?.$el?.getAttribute?.('ref')}"]`)) ||
         target.closest('select') ||
-        target.closest('input')
+        target.closest('input') ||
+        target.closest('textarea')
       
       if (!isClickOnField) {
         // Закрываем клавиатуру если какое-то поле в фокусе

@@ -1,17 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
+import { useFormKeyboard } from '@/composables/useFormKeyboard'
 
 const route = useRoute()
 const router = useRouter()
 const { hapticFeedback, user } = useTelegram()
+const { 
+  isEditing, 
+  activeField, 
+  isMobile, 
+  handleFieldFocus, 
+  createFieldClickHandler, 
+  handleInputBlur, 
+  createContainerClickHandler, 
+  handleViewportChange, 
+  handleEnterKey, 
+  handleNumberKeypress 
+} = useFormKeyboard()
 
 const shortName = ref('')
 const description = ref('')
 const saving = ref(false)
 const error = ref<string | null>(null)
+const shortNameInputRef = ref<HTMLInputElement | null>(null)
+const descriptionTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const shortNameFieldRef = ref<HTMLDivElement | null>(null)
+const descriptionFieldRef = ref<HTMLDivElement | null>(null)
 
 const exerciseId = route.params.exerciseId as string
 
@@ -53,16 +70,40 @@ const saveComment = async () => {
   }
 }
 
-const handleContentClick = (event: Event) => {
-  const target = event.target as HTMLElement
-  // Закрываем клавиатуру если клик не по input/textarea
-  if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') {
-    const activeElement = document.activeElement as HTMLElement
-    if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
-      activeElement.blur()
-    }
-  }
+// Создаем обработчики для полей
+const handleShortNameFocus = () => {
+  handleFieldFocus('shortName', shortNameFieldRef.value)
 }
+
+const handleDescriptionFocus = () => {
+  handleFieldFocus('description', descriptionFieldRef.value)
+}
+
+const handleShortNameClick = createFieldClickHandler(shortNameInputRef)
+const handleDescriptionClick = createFieldClickHandler(descriptionTextareaRef)
+
+// Создаем обработчик клика по контейнеру
+const handleContainerClick = createContainerClickHandler(
+  [shortNameInputRef, descriptionTextareaRef], 
+  [shortNameFieldRef, descriptionFieldRef]
+)
+
+// Создаем обработчик изменения viewport
+const handleViewportChangeWrapper = () => {
+  const getActiveContainer = () => {
+    return activeField.value === 'shortName' ? shortNameFieldRef.value : descriptionFieldRef.value
+  }
+  handleViewportChange(getActiveContainer)
+}
+
+onMounted(() => {
+  // Слушаем изменения размера окна и высоты viewport
+  window.addEventListener('resize', handleViewportChangeWrapper)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleViewportChangeWrapper)
+})
 </script>
 
 <template>
@@ -94,42 +135,56 @@ const handleContentClick = (event: Event) => {
     <div class="flex-1 px-6 pb-8 flex flex-col min-h-0">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-0">
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col min-h-0 p-6" @click="handleContentClick">
-          <!-- Short Name Input -->
-          <div class="mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-2">Краткое название</h2>
-            <input
-              v-model="shortName"
-              type="text"
-              class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-base text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
-              placeholder="Введите краткое название замечания..."
-              style="touch-action: manipulation;"
-              maxlength="100"
-              enterkeyhint="next"
-              @click.stop
-            />
-          </div>
+        <div class="flex-1 flex flex-col min-h-0">
+          <!-- Scrollable Content -->
+          <div class="flex-1 overflow-y-auto p-6" style="touch-action: pan-y;" @click="handleContainerClick">
+            <!-- Short Name Input -->
+            <div ref="shortNameFieldRef" class="mb-6" @click="handleShortNameClick">
+              <h2 class="text-lg font-semibold text-gray-800 mb-2">Краткое название</h2>
+              <input
+                ref="shortNameInputRef"
+                v-model="shortName"
+                type="text"
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-base text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors"
+                placeholder="Введите краткое название замечания..."
+                style="touch-action: manipulation;"
+                maxlength="100"
+                enterkeyhint="next"
+                @focus="handleShortNameFocus"
+                @blur="handleInputBlur"
+                @keypress="handleEnterKey"
+              />
+            </div>
 
-          <!-- Description Editor -->
-          <div class="flex-1 flex flex-col min-h-0 mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">Описание</h3>
-            <textarea
-              v-model="description"
-              class="flex-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-base text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
-              placeholder="Добавьте подробное описание замечания..."
-              style="touch-action: manipulation; min-height: 200px;"
-              enterkeyhint="done"
-              @click.stop
-            ></textarea>
+            <!-- Description Editor -->
+            <div ref="descriptionFieldRef" class="mb-6" @click="handleDescriptionClick">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3">Описание</h3>
+              <textarea
+                ref="descriptionTextareaRef"
+                v-model="description"
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-base text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
+                placeholder="Добавьте подробное описание замечания..."
+                style="touch-action: manipulation; min-height: 200px;"
+                enterkeyhint="done"
+                @focus="handleDescriptionFocus"
+                @blur="handleInputBlur"
+                @keypress="handleEnterKey"
+              ></textarea>
+            </div>
+
+            <!-- Добавляем небольшой отступ для клавиатуры -->
+            <div class="h-20"></div>
           </div>
 
           <!-- Error Message -->
-          <div v-if="error" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
-            <p class="text-red-600 text-sm">{{ error }}</p>
+          <div v-if="error" class="px-6 pb-4">
+            <div class="p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p class="text-red-600 text-sm">{{ error }}</p>
+            </div>
           </div>
 
-          <!-- Action Buttons -->
-          <div class="pt-4">
+          <!-- Fixed Action Buttons - скрываем в режиме редактирования на мобильных -->
+          <div v-if="!isEditing || !isMobile" class="p-6 pt-4 border-t border-gray-100 bg-white">
             <div class="flex gap-4">
               <button
                 @click="goBack"
