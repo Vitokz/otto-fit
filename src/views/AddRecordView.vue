@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
+import { useFormKeyboard } from '@/composables/useFormKeyboard'
 import type { Database } from '@/types/database.types'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
@@ -15,6 +16,18 @@ type MeasurementUnit = Database['public']['Tables']['measurement_units']['Row']
 const route = useRoute()
 const router = useRouter()
 const { hapticFeedback, user } = useTelegram()
+const { 
+  isEditing, 
+  activeField, 
+  isMobile, 
+  handleFieldFocus, 
+  createFieldClickHandler, 
+  handleInputBlur, 
+  createContainerClickHandler, 
+  handleViewportChange, 
+  handleEnterKey, 
+  handleNumberKeypress 
+} = useFormKeyboard()
 
 const exercise = ref<Exercise | null>(null)
 const measurementUnits = ref<MeasurementUnit[]>([])
@@ -29,8 +42,6 @@ const valueInputRef = ref<HTMLInputElement | null>(null)
 const nameFieldRef = ref<HTMLDivElement | null>(null)
 const valueFieldRef = ref<HTMLDivElement | null>(null)
 const scrollContainerRef = ref<HTMLDivElement | null>(null)
-const isEditing = ref(false)
-const activeField = ref<'name' | 'value' | null>(null)
 
 const exerciseId = route.params.exerciseId as string
 
@@ -114,77 +125,7 @@ const saveNewRecord = async () => {
   }
 }
 
-// Универсальный обработчик Enter для закрытия клавиатуры
-const handleEnterKey = (event: KeyboardEvent) => {
-  if (event.key === 'Enter') {
-    const input = event.target as HTMLInputElement
-    input.blur()
-    event.preventDefault()
-  }
-}
-
-const handleNumberKeypress = (event: KeyboardEvent) => {
-  const char = event.key
-  const input = event.target as HTMLInputElement
-  
-  // Enter закрывает клавиатуру
-  if (char === 'Enter') {
-    input.blur()
-    event.preventDefault()
-    return
-  }
-  
-  // Разрешаем: цифры, точка, запятая, минус, backspace, delete, tab, escape, стрелки
-  if (
-    /[0-9]/.test(char) || 
-    char === '.' || 
-    char === ',' || 
-    char === '-' ||
-    ['Backspace', 'Delete', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(char)
-  ) {
-    // Дополнительная проверка для точки/запятой - только одна на поле
-    if ((char === '.' || char === ',') && input.value.includes('.')) {
-      event.preventDefault()
-    }
-    return
-  }
-  
-  // Блокируем все остальные символы
-  event.preventDefault()
-}
-
-// Универсальный обработчик фокуса для всех полей
-const handleFieldFocus = (fieldType: 'name' | 'value', containerElement: HTMLElement | null) => {
-  isEditing.value = true
-  activeField.value = fieldType
-  
-  if (!containerElement) return
-  
-  // Сначала позиционируем поле, затем ждем появления клавиатуры
-  containerElement.scrollIntoView({ 
-    behavior: 'smooth', 
-    block: 'start',
-    inline: 'nearest'
-  })
-  
-  // Ждем завершения скролла, затем корректируем позицию после появления клавиатуры
-  setTimeout(() => {
-    if (containerElement && isEditing.value && activeField.value === fieldType) {
-      // Дополнительная корректировка позиции после появления клавиатуры
-      containerElement.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start',
-        inline: 'nearest'
-      })
-      
-      // Небольшой отступ сверху для лучшей видимости заголовка
-      setTimeout(() => {
-        window.scrollBy({ top: -60, behavior: 'smooth' })
-      }, 100)
-    }
-  }, 500)
-}
-
+// Создаем обработчики для полей
 const handleNameFocus = () => {
   handleFieldFocus('name', nameFieldRef.value)
 }
@@ -193,98 +134,32 @@ const handleValueFocus = () => {
   handleFieldFocus('value', valueFieldRef.value)
 }
 
-// Обработчики клика по полям для принудительного фокуса
-const handleNameClick = () => {
-  if (nameInputRef.value) {
-    nameInputRef.value.focus()
+const handleNameClick = createFieldClickHandler(nameInputRef)
+const handleValueClick = createFieldClickHandler(valueInputRef)
+
+// Создаем обработчик клика по контейнеру
+const handleContainerClick = createContainerClickHandler(
+  [nameInputRef, valueInputRef], 
+  [nameFieldRef, valueFieldRef]
+)
+
+// Создаем обработчик изменения viewport
+const handleViewportChangeWrapper = () => {
+  const getActiveContainer = () => {
+    return activeField.value === 'name' ? nameFieldRef.value : valueFieldRef.value
   }
-}
-
-const handleValueClick = () => {
-  if (valueInputRef.value) {
-    valueInputRef.value.focus()
-  }
-}
-
-const handleInputBlur = () => {
-  isEditing.value = false
-  activeField.value = null
-}
-
-// Улучшенный обработчик клика вне полей
-const handleContainerClick = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  
-  // Проверяем, не является ли клик по input, select или их контейнерам
-  if (
-    target !== nameInputRef.value && 
-    target !== valueInputRef.value &&
-    !target.closest('select') &&
-    !target.closest('input') &&
-    !target.closest('[ref="nameFieldRef"]') &&
-    !target.closest('[ref="valueFieldRef"]')
-  ) {
-    // Закрываем клавиатуру если какое-то поле в фокусе
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur()
-    }
-  }
-}
-
-const isMobile = ref(false)
-const initialViewportHeight = ref(0)
-
-const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-}
-
-// Отслеживаем появление клавиатуры и корректируем позицию
-const handleViewportChange = () => {
-  if (!isEditing.value || !activeField.value) return
-  
-  const currentHeight = window.innerHeight
-  const heightDifference = initialViewportHeight.value - currentHeight
-  
-  // Если высота уменьшилась более чем на 150px - появилась клавиатура
-  if (heightDifference > 150) {
-    const containerElement = activeField.value === 'name' ? nameFieldRef.value : valueFieldRef.value
-    if (containerElement) {
-      // Позиционируем поле в верхней части видимой области
-      containerElement.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start',
-        inline: 'nearest'
-      })
-      // Отступ сверху для комфортного просмотра заголовка
-      setTimeout(() => {
-        window.scrollBy({ top: -60, behavior: 'smooth' })
-      }, 100)
-    }
-  }
+  handleViewportChange(getActiveContainer)
 }
 
 onMounted(() => {
-  checkMobile()
   loadData()
   
-  // Запоминаем изначальную высоту viewport
-  initialViewportHeight.value = window.innerHeight
-  
   // Слушаем изменения размера окна и высоты viewport
-  window.addEventListener('resize', checkMobile)
-  window.addEventListener('resize', handleViewportChange)
-  
-  // Также слушаем изменения высоты viewport (для мобильных браузеров)
-  window.addEventListener('orientationchange', () => {
-    setTimeout(() => {
-      initialViewportHeight.value = window.innerHeight
-    }, 100)
-  })
+  window.addEventListener('resize', handleViewportChangeWrapper)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
-  window.removeEventListener('resize', handleViewportChange)
+  window.removeEventListener('resize', handleViewportChangeWrapper)
 })
 </script>
 

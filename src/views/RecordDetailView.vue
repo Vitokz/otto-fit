@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
+import { useFormKeyboard } from '@/composables/useFormKeyboard'
 import type { Database } from '@/types/database.types'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
@@ -14,6 +15,18 @@ type ExerciseRecord = Database['public']['Tables']['exercise_records']['Row'] & 
 const route = useRoute()
 const router = useRouter()
 const { hapticFeedback, user } = useTelegram()
+const { 
+  isEditing, 
+  activeField, 
+  isMobile, 
+  handleFieldFocus, 
+  createFieldClickHandler, 
+  handleInputBlur, 
+  createContainerClickHandler, 
+  handleViewportChange, 
+  handleEnterKey, 
+  handleNumberKeypress 
+} = useFormKeyboard()
 
 const record = ref<ExerciseRecord | null>(null)
 const editedValue = ref<number | null>(null)
@@ -21,15 +34,10 @@ const loading = ref(true)
 const saving = ref(false)
 const error = ref<string | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
+const inputFieldRef = ref<HTMLDivElement | null>(null)
 const scrollContainerRef = ref<HTMLDivElement | null>(null)
-const isEditing = ref(false)
-const isMobile = ref(false)
 
 const recordId = route.params.recordId as string
-
-const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-}
 
 const loadRecord = async () => {
   try {
@@ -117,76 +125,34 @@ const saveRecord = async () => {
   }
 }
 
-const handleNumberKeypress = (event: KeyboardEvent) => {
-  const char = event.key
-  const input = event.target as HTMLInputElement
-  
-  // Enter закрывает клавиатуру
-  if (char === 'Enter') {
-    inputRef.value?.blur()
-    event.preventDefault()
-    return
-  }
-  
-  // Разрешаем: цифры, точка, запятая, минус, backspace, delete, tab, escape, стрелки
-  if (
-    /[0-9]/.test(char) || 
-    char === '.' || 
-    char === ',' || 
-    char === '-' ||
-    ['Backspace', 'Delete', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(char)
-  ) {
-    // Дополнительная проверка для точки/запятой - только одна на поле
-    if ((char === '.' || char === ',') && input.value.includes('.')) {
-      event.preventDefault()
-    }
-    return
-  }
-  
-  // Блокируем все остальные символы
-  event.preventDefault()
-}
-
+// Создаем обработчики для поля
 const handleInputFocus = () => {
-  isEditing.value = true
-  
-  if (isMobile.value) {
-    // На мобильных устройствах позиционируем поле в верхней части экрана
-    setTimeout(() => {
-      if (inputRef.value) {
-        const inputRect = inputRef.value.getBoundingClientRect()
-        const scrollTop = window.pageYOffset + inputRect.top - 150 // 150px от верха экрана
-        
-        window.scrollTo({
-          top: scrollTop,
-          behavior: 'smooth'
-        })
-      }
-    }, 300)
-  }
+  handleFieldFocus('value', inputFieldRef.value)
 }
 
-const handleInputBlur = () => {
-  isEditing.value = false
-}
+const handleInputClick = createFieldClickHandler(inputRef)
 
-const handleContainerClick = (event: MouseEvent) => {
-  // Если клик был вне input, закрываем клавиатуру
-  if (inputRef.value && event.target !== inputRef.value) {
-    inputRef.value.blur()
-  }
+// Создаем обработчик клика по контейнеру
+const handleContainerClick = createContainerClickHandler(
+  [inputRef], 
+  [inputFieldRef]
+)
+
+// Создаем обработчик изменения viewport
+const handleViewportChangeWrapper = () => {
+  const getActiveContainer = () => inputFieldRef.value
+  handleViewportChange(getActiveContainer)
 }
 
 onMounted(() => {
-  checkMobile()
   loadRecord()
   
-  // Слушаем изменения размера окна
-  window.addEventListener('resize', checkMobile)
+  // Слушаем изменения размера окна и высоты viewport
+  window.addEventListener('resize', handleViewportChangeWrapper)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
+  window.removeEventListener('resize', handleViewportChangeWrapper)
 })
 </script>
 
@@ -265,7 +231,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Value Editor -->
-            <div class="mb-6">
+            <div ref="inputFieldRef" class="mb-6" @click="handleInputClick">
               <h3 class="text-lg font-semibold text-gray-800 mb-3">Значение</h3>
               <div class="relative">
                 <input
@@ -279,7 +245,6 @@ onUnmounted(() => {
                   style="touch-action: manipulation;"
                   @focus="handleInputFocus"
                   @blur="handleInputBlur"
-                  @click.stop
                   @keypress="handleNumberKeypress"
                 />
                 <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 text-lg font-medium pointer-events-none">
@@ -288,8 +253,8 @@ onUnmounted(() => {
               </div>
             </div>
             
-            <!-- Добавляем отступ для клавиатуры -->
-            <div class="h-64"></div>
+            <!-- Добавляем небольшой отступ для клавиатуры -->
+            <div class="h-20"></div>
           </div>
 
           <!-- Fixed Action Buttons - скрываем в режиме редактирования на мобильных -->
