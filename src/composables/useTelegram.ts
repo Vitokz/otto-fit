@@ -156,6 +156,8 @@ export function useTelegram() {
                 setViewportCssVars()
                 setSafeAreaCssVars()
 
+                WebApp.requestFullscreen()
+
                 // Try to reduce collapses from gestures if supported
                 try { (WebApp as any).disableVerticalSwipes?.() } catch (_) {}
 
