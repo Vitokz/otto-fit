@@ -67,6 +67,21 @@ export function useTelegram() {
     const isReady = ref(false)
     const user = ref<TelegramUser | null>(null)
     const webApp = ref<TelegramWebApp | null>(null)
+    let viewportHandler: ((params: { isStateStable: boolean }) => void) | null = null
+    let resizeHandler: (() => void) | null = null
+
+    const setViewportCssVars = () => {
+        try {
+            if (!webApp.value) return
+            const root = document.documentElement
+            const currentHeight = (webApp.value as any).viewportHeight || 0
+            const stableHeight = (webApp.value as any).viewportStableHeight || currentHeight
+            if (currentHeight) root.style.setProperty('--tg-viewport-height', `${currentHeight}px`)
+            if (stableHeight) root.style.setProperty('--tg-viewport-stable-height', `${stableHeight}px`)
+        } catch (_) {
+            // noop
+        }
+    }
 
     const initTelegram = () => {
         try {
@@ -105,22 +120,41 @@ export function useTelegram() {
 
             if (typeof window !== 'undefined' && WebApp) {
                 WebApp.ready()
-    
+
                 webApp.value = WebApp as any
                 user.value = WebApp.initDataUnsafe?.user || null
                 isReady.value = true
-    
-                // Expand the app to full height
-                WebApp.expand()
-    
-                // Enable closing confirmation
-                WebApp.enableClosingConfirmation()
-    
+
+                // Initial expand and CSS vars
+                try { WebApp.expand() } catch (_) {}
+                try { WebApp.enableClosingConfirmation() } catch (_) {}
+                setViewportCssVars()
+
+                // Try to reduce collapses from gestures if supported
+                try { (WebApp as any).disableVerticalSwipes?.() } catch (_) {}
+
+                // Keep expanding when viewport changes (inline/attach menu launches)
+                viewportHandler = ({ isStateStable }: { isStateStable: boolean }) => {
+                    try { WebApp.expand() } catch (_) {}
+                    setViewportCssVars()
+                    if (isStateStable) {
+                        setViewportCssVars()
+                    }
+                }
+                ;(WebApp as any).onEvent?.('viewportChanged', viewportHandler)
+
+                // Fallback: update on window resize as well
+                resizeHandler = () => {
+                    try { WebApp.expand() } catch (_) {}
+                    setViewportCssVars()
+                }
+                window.addEventListener('resize', resizeHandler, { passive: true })
+
                 // Set header color to match theme
                 if (WebApp.themeParams.bg_color) {
                     WebApp.setHeaderColor(WebApp.themeParams.bg_color)
                 }
-    
+
                 console.log('Telegram WebApp initialized:', {
                     version: WebApp.version,
                     platform: WebApp.platform,
@@ -235,7 +269,16 @@ export function useTelegram() {
     })
 
     onUnmounted(() => {
-        // Cleanup if needed
+        try {
+            if ((WebApp as any).offEvent && viewportHandler) {
+                ;(WebApp as any).offEvent('viewportChanged', viewportHandler)
+            }
+        } catch (_) {}
+        try {
+            if (resizeHandler) {
+                window.removeEventListener('resize', resizeHandler)
+            }
+        } catch (_) {}
     })
 
     return {

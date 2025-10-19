@@ -64,7 +64,7 @@ watchEffect(() => {
 
 <style scoped>
 .app {
-  min-height: 100vh;
+  min-height: var(--tg-viewport-height, 100vh);
   background-color: var(--tg-bg-color, #ffffff);
   color: var(--tg-text-color, #000000);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -75,7 +75,7 @@ watchEffect(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: var(--tg-viewport-height, 100vh);
   gap: 1rem;
 }
 
@@ -94,7 +94,7 @@ watchEffect(() => {
 }
 
 .app-content {
-  min-height: 100vh;
+  min-height: var(--tg-viewport-height, 100vh);
   display: flex;
   flex-direction: column;
 }
