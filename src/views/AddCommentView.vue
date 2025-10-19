@@ -36,7 +36,12 @@ const exerciseId = route.params.exerciseId as string
 
 const goBack = () => {
   hapticFeedback('impact')
-  router.back()
+  // Переходим на страницу упражнения с вкладкой "comments"
+  router.push({ 
+    name: 'exercise-detail', 
+    params: { exerciseId: exerciseId }, 
+    query: { tab: 'comments' } 
+  })
 }
 
 const saveComment = async () => {

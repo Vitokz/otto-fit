@@ -70,7 +70,16 @@ const loadComment = async () => {
 
 const goBack = () => {
   hapticFeedback('impact')
-  router.back()
+  // Переходим на страницу упражнения с вкладкой "comments"
+  if (comment.value?.exercise_id) {
+    router.push({ 
+      name: 'exercise-detail', 
+      params: { exerciseId: comment.value.exercise_id }, 
+      query: { tab: 'comments' } 
+    })
+  } else {
+    router.back()
+  }
 }
 
 const openCompleteModal = () => {
