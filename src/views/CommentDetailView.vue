@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
+import { useFormKeyboard } from '@/composables/useFormKeyboard'
 import type { Database } from '@/types/database.types'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
@@ -11,6 +12,18 @@ type ExerciseComment = Database['public']['Tables']['exercise_comments']['Row']
 const route = useRoute()
 const router = useRouter()
 const { hapticFeedback, user } = useTelegram()
+const { 
+  isEditing, 
+  activeField, 
+  isMobile, 
+  handleFieldFocus, 
+  createFieldClickHandler, 
+  handleInputBlur, 
+  createContainerClickHandler, 
+  handleViewportChange, 
+  handleEnterKey, 
+  handleNumberKeypress 
+} = useFormKeyboard()
 
 const comment = ref<ExerciseComment | null>(null)
 const editedDescription = ref('')
@@ -18,6 +31,8 @@ const loading = ref(true)
 const saving = ref(false)
 const error = ref<string | null>(null)
 const showCompleteModal = ref(false)
+const descriptionTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const descriptionFieldRef = ref<HTMLDivElement | null>(null)
 
 const commentId = route.params.commentId as string
 
@@ -133,19 +148,34 @@ const completeComment = async () => {
   }
 }
 
-const handleContentClick = (event: Event) => {
-  const target = event.target as HTMLElement
-  // Закрываем клавиатуру если клик не по textarea
-  if (target.tagName !== 'TEXTAREA') {
-    const activeElement = document.activeElement as HTMLElement
-    if (activeElement && activeElement.tagName === 'TEXTAREA') {
-      activeElement.blur()
-    }
-  }
+// Создаем обработчики для поля
+const handleDescriptionFocus = () => {
+  handleFieldFocus('description', descriptionFieldRef.value)
+}
+
+const handleDescriptionClick = createFieldClickHandler(descriptionTextareaRef)
+
+// Создаем обработчик клика по контейнеру
+const handleContainerClick = createContainerClickHandler(
+  [descriptionTextareaRef], 
+  [descriptionFieldRef]
+)
+
+// Создаем обработчик изменения viewport
+const handleViewportChangeWrapper = () => {
+  const getActiveContainer = () => descriptionFieldRef.value
+  handleViewportChange(getActiveContainer)
 }
 
 onMounted(() => {
   loadComment()
+  
+  // Слушаем изменения размера окна и высоты viewport
+  window.addEventListener('resize', handleViewportChangeWrapper)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleViewportChangeWrapper)
 })
 </script>
 
@@ -199,30 +229,39 @@ onMounted(() => {
         </div>
 
         <!-- Main Content -->
-        <div v-else-if="comment" class="flex-1 flex flex-col min-h-0 p-6" @click="handleContentClick">
-          <!-- Comment Title -->
-          <div class="mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-2">Краткое название</h2>
-            <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl">
-              <p class="text-blue-800 font-medium">{{ comment.short_name }}</p>
+        <div v-else-if="comment" class="flex-1 flex flex-col min-h-0">
+          <!-- Scrollable Content -->
+          <div class="flex-1 overflow-y-auto p-6" style="touch-action: pan-y;" @click="handleContainerClick">
+            <!-- Comment Title -->
+            <div class="mb-6">
+              <h2 class="text-lg font-semibold text-gray-800 mb-2">Краткое название</h2>
+              <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <p class="text-blue-800 font-medium">{{ comment.short_name }}</p>
+              </div>
             </div>
-          </div>
 
-          <!-- Description Editor -->
-          <div class="flex-1 flex flex-col min-h-0 mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">Описание</h3>
-            <textarea
-              v-model="editedDescription"
-              class="flex-1 w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-base text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
-              placeholder="Добавьте подробное описание замечания..."
-              style="touch-action: manipulation; min-height: 200px;"
-              enterkeyhint="done"
-              @click.stop
-            ></textarea>
+            <!-- Description Editor -->
+            <div ref="descriptionFieldRef" class="mb-6" @click="handleDescriptionClick">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3">Описание</h3>
+              <textarea
+                ref="descriptionTextareaRef"
+                v-model="editedDescription"
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-base text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors resize-none"
+                placeholder="Добавьте подробное описание замечания..."
+                style="touch-action: manipulation; min-height: 200px;"
+                enterkeyhint="done"
+                @focus="handleDescriptionFocus"
+                @blur="handleInputBlur"
+                @keypress="handleEnterKey"
+              ></textarea>
+            </div>
+
+            <!-- Добавляем небольшой отступ для клавиатуры -->
+            <div class="h-20"></div>
           </div>
 
           <!-- Complete Button -->
-          <div class="pt-4 mb-1">
+          <div v-if="!isEditing || !isMobile" class="px-6 pb-4">
             <button
               @click="openCompleteModal"
               :disabled="saving"
@@ -234,26 +273,26 @@ onMounted(() => {
             </button>
           </div>
 
-          <!-- Action Buttons -->
-          <div class="pt-4">
+          <!-- Fixed Action Buttons - скрываем в режиме редактирования на мобильных -->
+          <div v-if="!isEditing || !isMobile" class="p-6 pt-4 border-t border-gray-100 bg-white">
             <div class="flex gap-4">
-            <button
-              @click="goBack"
-              :disabled="saving"
-              class="flex-1 py-4 px-5 bg-gray-100 text-gray-800 rounded-xl font-bold text-base hover:bg-gray-200 active:scale-95 transition-all duration-200 disabled:opacity-50"
-              style="touch-action: manipulation;"
-            >
-              Назад
-            </button>
-            <button
-              @click="saveComment"
-              :disabled="saving"
-              class="flex-1 py-4 px-5 bg-blue-500 text-white rounded-xl font-bold text-base hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              style="touch-action: manipulation;"
-            >
-              <div v-if="saving" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              {{ saving ? 'Сохранение...' : 'Сохранить' }}
-            </button>
+              <button
+                @click="goBack"
+                :disabled="saving"
+                class="flex-1 py-4 px-5 bg-gray-100 text-gray-800 rounded-xl font-bold text-base hover:bg-gray-200 active:scale-95 transition-all duration-200 disabled:opacity-50"
+                style="touch-action: manipulation;"
+              >
+                Назад
+              </button>
+              <button
+                @click="saveComment"
+                :disabled="saving"
+                class="flex-1 py-4 px-5 bg-blue-500 text-white rounded-xl font-bold text-base hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                style="touch-action: manipulation;"
+              >
+                <div v-if="saving" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                {{ saving ? 'Сохранение...' : 'Сохранить' }}
+              </button>
             </div>
           </div>
         </div>
