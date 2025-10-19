@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
+import { useTelegramBackButton } from '@/composables/useTelegramBackButton'
 import type { Database } from '@/types/database.types'
 
 type MetconExercise = Database['public']['Tables']['metcon_exercises']['Row']
@@ -14,6 +15,7 @@ type MeasurementUnit = Database['public']['Tables']['measurement_units']['Row']
 const route = useRoute()
 const router = useRouter()
 const { hapticFeedback, user } = useTelegram()
+const { setupBackButton, removeBackButton } = useTelegramBackButton()
 
 const metcon = ref<MetconExercise | null>(null)
 const record = ref<MetconRecord | null>(null)
@@ -195,6 +197,11 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
 
 onMounted(() => {
   loadMetconData()
+  setupBackButton(goBack)
+})
+
+onUnmounted(() => {
+  removeBackButton()
 })
 </script>
 
@@ -202,19 +209,6 @@ onMounted(() => {
   <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
     <!-- Header -->
     <div class="tg-safe-top pb-4 px-6">
-      <!-- Back Button -->
-      <div class="flex justify-start mb-4">
-        <button 
-          @click="goBack"
-          class="w-10 h-10 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all duration-200"
-          style="touch-action: manipulation;"
-        >
-          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </button>
-      </div>
-      
       <!-- Metcon Title -->
       <div class="text-center">
         <h1 class="text-2xl font-bold text-gray-900">
@@ -300,22 +294,13 @@ onMounted(() => {
 
           <!-- Action Buttons -->
           <div class="p-6 pt-0">
-            <div class="flex gap-4">
-              <button
-                @click="goBack"
-                class="flex-1 py-4 bg-gray-100 text-gray-800 rounded-2xl font-semibold hover:bg-gray-200 active:scale-95 transition-all duration-200"
-                style="touch-action: manipulation;"
-              >
-                Назад
-              </button>
-              <button
-                @click="openEditModal"
-                class="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-semibold hover:bg-blue-600 active:scale-95 transition-all duration-200"
-                style="touch-action: manipulation;"
-              >
-                {{ record ? 'Обновить рекорд' : 'Добавить рекорд' }}
-              </button>
-            </div>
+            <button
+              @click="openEditModal"
+              class="w-full py-4 bg-blue-500 text-white rounded-2xl font-semibold hover:bg-blue-600 active:scale-95 transition-all duration-200"
+              style="touch-action: manipulation;"
+            >
+              {{ record ? 'Обновить рекорд' : 'Добавить рекорд' }}
+            </button>
           </div>
         </div>
       </div>

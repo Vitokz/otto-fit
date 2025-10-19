@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
+import { useTelegramBackButton } from '@/composables/useTelegramBackButton'
 import { useFormKeyboard } from '@/composables/useFormKeyboard'
 import type { Database } from '@/types/database.types'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
@@ -15,6 +16,7 @@ type ExerciseRecord = Database['public']['Tables']['exercise_records']['Row'] & 
 const route = useRoute()
 const router = useRouter()
 const { hapticFeedback, user } = useTelegram()
+const { setupBackButton, removeBackButton } = useTelegramBackButton()
 const { 
   isEditing, 
   activeField, 
@@ -146,12 +148,14 @@ const handleViewportChangeWrapper = () => {
 
 onMounted(() => {
   loadRecord()
+  setupBackButton(goBack)
   
   // Слушаем изменения размера окна и высоты viewport
   window.addEventListener('resize', handleViewportChangeWrapper)
 })
 
 onUnmounted(() => {
+  removeBackButton()
   window.removeEventListener('resize', handleViewportChangeWrapper)
 })
 </script>
@@ -160,19 +164,6 @@ onUnmounted(() => {
   <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
     <!-- Header -->
     <div class="tg-safe-top pb-4 px-6">
-      <!-- Back Button -->
-      <div class="flex justify-start mb-4">
-        <button 
-          @click="goBack"
-          class="w-10 h-10 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all duration-200"
-          style="touch-action: manipulation;"
-        >
-          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </button>
-      </div>
-      
       <!-- Page Title -->
       <div class="text-center">
         <h1 class="text-2xl font-bold text-gray-900">
@@ -259,25 +250,15 @@ onUnmounted(() => {
 
           <!-- Fixed Action Buttons - скрываем в режиме редактирования на мобильных -->
           <div v-if="!isEditing || !isMobile" class="p-6 pt-4 border-t border-gray-100 bg-white">
-            <div class="flex gap-4">
-              <button
-                @click="goBack"
-                :disabled="saving"
-                class="flex-1 py-4 px-5 bg-gray-100 text-gray-800 rounded-xl font-bold text-base hover:bg-gray-200 active:scale-95 transition-all duration-200 disabled:opacity-50"
-                style="touch-action: manipulation;"
-              >
-                Назад
-              </button>
-              <button
-                @click="saveRecord"
-                :disabled="saving || editedValue === null"
-                class="flex-1 py-4 px-5 bg-blue-500 text-white rounded-xl font-bold text-base hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                style="touch-action: manipulation;"
-              >
-                <div v-if="saving" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                {{ saving ? 'Сохранение...' : 'Сохранить' }}
-              </button>
-            </div>
+            <button
+              @click="saveRecord"
+              :disabled="saving || editedValue === null"
+              class="w-full py-4 px-5 bg-blue-500 text-white rounded-xl font-bold text-base hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              style="touch-action: manipulation;"
+            >
+              <div v-if="saving" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              {{ saving ? 'Сохранение...' : 'Сохранить' }}
+            </button>
           </div>
         </div>
       </div>

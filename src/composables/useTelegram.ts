@@ -12,6 +12,13 @@ declare global {
                     notificationOccurred: (type: string) => void
                     selectionChanged: () => void
                 }
+                BackButton?: {
+                    show: () => void
+                    hide: () => void
+                    onClick: (callback: () => void) => void
+                    offClick: (callback: () => void) => void
+                    isVisible: boolean
+                }
             }
         }
     }
@@ -190,6 +197,39 @@ export function useTelegram() {
         }
     }
 
+    const showBackButton = (callback: () => void) => {
+        try {
+            if (typeof window !== 'undefined' && window.Telegram?.WebApp?.BackButton) {
+                window.Telegram.WebApp.BackButton.show()
+                window.Telegram.WebApp.BackButton.onClick(callback)
+            }
+        } catch (error) {
+            console.warn('Show back button error:', error)
+        }
+    }
+
+    const hideBackButton = () => {
+        try {
+            if (typeof window !== 'undefined' && window.Telegram?.WebApp?.BackButton) {
+                window.Telegram.WebApp.BackButton.hide()
+            }
+        } catch (error) {
+            console.warn('Hide back button error:', error)
+        }
+    }
+
+    const isBackButtonVisible = () => {
+        try {
+            if (typeof window !== 'undefined' && window.Telegram?.WebApp?.BackButton) {
+                return window.Telegram.WebApp.BackButton.isVisible
+            }
+            return false
+        } catch (error) {
+            console.warn('Check back button visibility error:', error)
+            return false
+        }
+    }
+
     onMounted(() => {
         initTelegram()
     })
@@ -206,6 +246,9 @@ export function useTelegram() {
         showConfirm,
         hapticFeedback,
         close,
-        sendData
+        sendData,
+        showBackButton,
+        hideBackButton,
+        isBackButtonVisible
     }
 }

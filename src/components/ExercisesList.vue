@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
+import { useTelegramBackButton } from '@/composables/useTelegramBackButton'
 import type { Database } from '@/types/database.types'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
@@ -13,6 +14,7 @@ type ActivityCategory = Database['public']['Tables']['activity_categories']['Row
 const route = useRoute()
 const router = useRouter()
 const { hapticFeedback } = useTelegram()
+const { setupBackButton, removeBackButton } = useTelegramBackButton()
 
 const exercises = ref<Exercise[]>([])
 const metconExercises = ref<MetconExercise[]>([])
@@ -92,6 +94,11 @@ const goBack = () => {
 
 onMounted(() => {
   loadCategoryAndExercises()
+  setupBackButton(goBack)
+})
+
+onUnmounted(() => {
+  removeBackButton()
 })
 </script>
 
@@ -101,19 +108,6 @@ onMounted(() => {
     <div class="flex-1 flex flex-col min-h-0 w-full max-w-4xl mx-auto px-6">
       <!-- Header -->
       <div class="tg-safe-top pb-4">
-        <!-- Back Button -->
-        <div class="flex justify-start mb-4">
-          <button 
-            @click="goBack"
-            class="w-10 h-10 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all duration-200"
-            style="touch-action: manipulation;"
-          >
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-          </button>
-        </div>
-        
         <!-- Category Title -->
         <div class="text-center">
           <h1 class="text-2xl font-bold text-gray-900">

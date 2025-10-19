@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useTelegram } from '@/composables/useTelegram'
+import { useTelegramBackButton } from '@/composables/useTelegramBackButton'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
 const { hapticFeedback, showAlert, user: telegramUser } = useTelegram()
+const { setupBackButton, removeBackButton } = useTelegramBackButton()
 const authStore = useAuthStore()
 const router = useRouter()
 
@@ -82,6 +84,14 @@ const goBack = () => {
   hapticFeedback('impact')
   router.back()
 }
+
+onMounted(() => {
+  setupBackButton(goBack)
+})
+
+onUnmounted(() => {
+  removeBackButton()
+})
 </script>
 
 <template>

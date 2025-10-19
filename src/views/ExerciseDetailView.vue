@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { useTelegram } from '@/composables/useTelegram'
+import { useTelegramBackButton } from '@/composables/useTelegramBackButton'
 import type { Database } from '@/types/database.types'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
@@ -16,6 +17,7 @@ type MeasurementUnit = Database['public']['Tables']['measurement_units']['Row']
 const route = useRoute()
 const router = useRouter()
 const { hapticFeedback, user } = useTelegram()
+const { setupBackButton, removeBackButton } = useTelegramBackButton()
 
 const exercise = ref<Exercise | null>(null)
 const comments = ref<ExerciseComment[]>([])
@@ -177,6 +179,11 @@ const handleNumberKeypress = (event: KeyboardEvent) => {
 onMounted(() => {
   initializeTab()
   loadExerciseData()
+  setupBackButton(goBack)
+})
+
+onUnmounted(() => {
+  removeBackButton()
 })
 </script>
 
@@ -184,19 +191,6 @@ onMounted(() => {
   <div class="tg-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col overflow-hidden select-none" style="overscroll-behavior: none; touch-action: none;">
     <!-- Header -->
     <div class="tg-safe-top pb-4 px-6">
-      <!-- Back Button -->
-      <div class="flex justify-start mb-4">
-        <button 
-          @click="goBack"
-          class="w-10 h-10 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all duration-200"
-          style="touch-action: manipulation;"
-        >
-          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </button>
-      </div>
-      
       <!-- Exercise Title -->
       <div class="text-center">
         <h1 class="text-2xl font-bold text-gray-900">
