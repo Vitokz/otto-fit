@@ -61,6 +61,8 @@ export interface TelegramWebApp {
     viewportStableHeight: number
     headerColor: string
     backgroundColor: string
+    safeAreaInset?: { top: number; right: number; bottom: number; left: number }
+    contentSafeAreaInset?: { top: number; right: number; bottom: number; left: number }
 }
 
 export function useTelegram() {
@@ -78,6 +80,29 @@ export function useTelegram() {
             const stableHeight = (webApp.value as any).viewportStableHeight || currentHeight
             if (currentHeight) root.style.setProperty('--tg-viewport-height', `${currentHeight}px`)
             if (stableHeight) root.style.setProperty('--tg-viewport-stable-height', `${stableHeight}px`)
+        } catch (_) {
+            // noop
+        }
+    }
+
+    const setSafeAreaCssVars = () => {
+        try {
+            if (!webApp.value) return
+            const root = document.documentElement
+            const sa = (webApp.value as any).safeAreaInset
+            const csa = (webApp.value as any).contentSafeAreaInset
+            if (sa) {
+                if (typeof sa.top === 'number') root.style.setProperty('--tg-safe-area-inset-top', `${sa.top}px`)
+                if (typeof sa.right === 'number') root.style.setProperty('--tg-safe-area-inset-right', `${sa.right}px`)
+                if (typeof sa.bottom === 'number') root.style.setProperty('--tg-safe-area-inset-bottom', `${sa.bottom}px`)
+                if (typeof sa.left === 'number') root.style.setProperty('--tg-safe-area-inset-left', `${sa.left}px`)
+            }
+            if (csa) {
+                if (typeof csa.top === 'number') root.style.setProperty('--tg-content-safe-area-inset-top', `${csa.top}px`)
+                if (typeof csa.right === 'number') root.style.setProperty('--tg-content-safe-area-inset-right', `${csa.right}px`)
+                if (typeof csa.bottom === 'number') root.style.setProperty('--tg-content-safe-area-inset-bottom', `${csa.bottom}px`)
+                if (typeof csa.left === 'number') root.style.setProperty('--tg-content-safe-area-inset-left', `${csa.left}px`)
+            }
         } catch (_) {
             // noop
         }
@@ -129,6 +154,7 @@ export function useTelegram() {
                 try { WebApp.expand() } catch (_) {}
                 try { WebApp.enableClosingConfirmation() } catch (_) {}
                 setViewportCssVars()
+                setSafeAreaCssVars()
 
                 // Try to reduce collapses from gestures if supported
                 try { (WebApp as any).disableVerticalSwipes?.() } catch (_) {}
@@ -137,8 +163,10 @@ export function useTelegram() {
                 viewportHandler = ({ isStateStable }: { isStateStable: boolean }) => {
                     try { WebApp.expand() } catch (_) {}
                     setViewportCssVars()
+                    setSafeAreaCssVars()
                     if (isStateStable) {
                         setViewportCssVars()
+                        setSafeAreaCssVars()
                     }
                 }
                 ;(WebApp as any).onEvent?.('viewportChanged', viewportHandler)
@@ -147,6 +175,7 @@ export function useTelegram() {
                 resizeHandler = () => {
                     try { WebApp.expand() } catch (_) {}
                     setViewportCssVars()
+                    setSafeAreaCssVars()
                 }
                 window.addEventListener('resize', resizeHandler, { passive: true })
 
