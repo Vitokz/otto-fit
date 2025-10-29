@@ -383,12 +383,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_with_exercise_work: {
+        Row: {
+          created_at: string
+          exercise_id: string | null
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          created_at?: string
+          exercise_id?: string | null
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string | null
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_with_exercise_work_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_with_exercise_work_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["telegram_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      touch_user_with_exercise_work: {
+        Args: { p_exercise_id: string; p_user_id: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
