@@ -89,7 +89,7 @@ const selectExercise = (exercise: Exercise | MetconExercise) => {
 
 const goBack = () => {
   hapticFeedback('impact')
-  router.push({ name: 'home' })
+  router.push({ name: 'categories' })
 }
 
 onMounted(() => {
