@@ -1,6 +1,7 @@
 -- Create exercises table
 CREATE TABLE
     user_with_exercise_work (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
         user_id bigint NOT NULL REFERENCES user_profiles (telegram_id) ON DELETE CASCADE,
         exercise_id UUID REFERENCES exercises (id) ON DELETE CASCADE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE ('utc'::text, NOW()) NOT NULL,
