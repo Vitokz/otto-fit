@@ -83,7 +83,7 @@ const goBack = () => {
   hapticFeedback('impact')
   // Переходим на страницу упражнения с вкладкой "Рекорды"
   if (record.value?.exercise_id) {
-    router.push({ name: 'exercise-detail', params: { exerciseId: record.value.exercise_id }, query: { tab: 'records' } })
+    router.push({ name: 'exercise-detail', params: { exerciseId: record.value.exercise_id }, query: { tab: 'records', from: route.query.from as string | undefined } })
   } else {
     router.back()
   }
