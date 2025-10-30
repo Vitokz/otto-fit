@@ -86,7 +86,7 @@ const loadData = async () => {
 
 const goBack = () => {
   hapticFeedback('impact')
-  router.replace({ name: 'exercise-detail', params: { exerciseId }, query: { tab: 'records' } })
+  router.replace({ name: 'exercise-detail', params: { exerciseId }, query: { tab: 'records', from: route.query.from as string | undefined } })
 }
 
 const saveNewRecord = async () => {
@@ -117,7 +117,7 @@ const saveNewRecord = async () => {
     }
 
     hapticFeedback('success')
-    router.replace({ name: 'exercise-detail', params: { exerciseId }, query: { tab: 'records' } })
+    router.replace({ name: 'exercise-detail', params: { exerciseId }, query: { tab: 'records', from: route.query.from as string | undefined } })
   } catch (err: any) {
     console.error('Error saving new record:', err)
     hapticFeedback('error')

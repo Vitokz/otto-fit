@@ -119,17 +119,25 @@ const switchTab = (tab: 'comments' | 'records') => {
 
 const goBack = () => {
   hapticFeedback('impact')
-  router.push({ name: 'category-exercises', params: { categoryId: exercise.value?.category_id } }) 
+  if (route.query.from === 'recent') {
+    router.push({ name: 'recent' })
+    return
+  }
+  if (exercise.value?.category_id) {
+    router.push({ name: 'category-exercises', params: { categoryId: exercise.value.category_id } })
+    return
+  }
+  router.push({ name: 'recent' })
 }
 
 const openCommentDetail = (comment: ExerciseComment) => {
   hapticFeedback('impact')
-  router.push({ name: 'comment-detail', params: { commentId: comment.id } })
+  router.push({ name: 'comment-detail', params: { commentId: comment.id }, query: { from: route.query.from as string | undefined } })
 }
 
 const addComment = () => {
   hapticFeedback('impact')
-  router.push({ name: 'add-comment', params: { exerciseId } })
+  router.push({ name: 'add-comment', params: { exerciseId }, query: { from: route.query.from as string | undefined } })
 }
 
 const addRecord = () => {
@@ -143,13 +151,13 @@ const addRecord = () => {
 
 const openAddRecord = () => {
   hapticFeedback('impact')
-  router.push({ name: 'add-record', params: { exerciseId } })
+  router.push({ name: 'add-record', params: { exerciseId }, query: { from: route.query.from as string | undefined } })
 }
 
 
 const openRecordDetail = (record: ExerciseRecord) => {
   hapticFeedback('impact')
-  router.push({ name: 'record-detail', params: { recordId: record.id } })
+  router.push({ name: 'record-detail', params: { recordId: record.id }, query: { from: route.query.from as string | undefined } })
 }
 
 

@@ -40,7 +40,7 @@ const goBack = () => {
   router.push({ 
     name: 'exercise-detail', 
     params: { exerciseId: exerciseId }, 
-    query: { tab: 'comments' } 
+    query: { tab: 'comments', from: route.query.from as string | undefined } 
   })
 }
 

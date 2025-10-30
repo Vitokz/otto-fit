@@ -11,6 +11,8 @@ import AddRecordView from '../views/AddRecordView.vue'
 import UserDataForm from '../components/UserDataForm.vue'
 import WelcomeScreen from '../components/WelcomeScreen.vue'
 import ExercisesList from '../components/ExercisesList.vue'
+import RecentView from '@/views/RecentView.vue'
+import ActivityCategoriesListView from '@/views/ActivityCategoriesList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +21,22 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
+      children: [
+        { path: '', redirect: { name: 'recent' } },
+        {
+          path: 'recent',
+          name: 'recent',
+          component: RecentView,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'categories',
+          name: 'categories',
+          component: ActivityCategoriesListView,
+          meta: { requiresAuth: true }
+        }
+      ]
     },
     {
       path: '/auth-success',
