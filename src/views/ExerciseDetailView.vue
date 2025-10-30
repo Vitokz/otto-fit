@@ -119,7 +119,15 @@ const switchTab = (tab: 'comments' | 'records') => {
 
 const goBack = () => {
   hapticFeedback('impact')
-  router.push({ name: 'category-exercises', params: { categoryId: exercise.value?.category_id } }) 
+  if (route.query.from === 'recent') {
+    router.push({ name: 'recent' })
+    return
+  }
+  if (exercise.value?.category_id) {
+    router.push({ name: 'category-exercises', params: { categoryId: exercise.value.category_id } })
+    return
+  }
+  router.push({ name: 'recent' })
 }
 
 const openCommentDetail = (comment: ExerciseComment) => {

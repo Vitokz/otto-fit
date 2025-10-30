@@ -53,7 +53,7 @@ const loadRecent = async () => {
 const handleOpenExercise = (exerciseId: string | null) => {
   if (!exerciseId) return
   hapticFeedback('impact')
-  router.push({ name: 'exercise-detail', params: { exerciseId } })
+  router.push({ name: 'exercise-detail', params: { exerciseId }, query: { from: 'recent' } })
 }
 
 onMounted(() => {
