@@ -48,7 +48,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="app" :class="{ 'telegram-ready': isReady }">
+  <div class="app edge-to-edge" :class="{ 'telegram-ready': isReady }">
     <div v-if="!isReady" class="loading">
       <div class="loading-spinner"></div>
       <p>Загрузка Telegram Mini App...</p>

@@ -177,3 +177,15 @@ button, [role="button"] {
     margin: 0 auto;
   }
 }
+
+/* Edge-to-edge mode: remove page gutters and card chrome globally */
+.edge-to-edge .px-6 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.edge-to-edge .bg-white.rounded-2xl.shadow-sm.border {
+  border-radius: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
