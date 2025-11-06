@@ -13,6 +13,7 @@ import WelcomeScreen from '../components/WelcomeScreen.vue'
 import ExercisesList from '../components/ExercisesList.vue'
 import RecentView from '@/views/RecentView.vue'
 import ActivityCategoriesListView from '@/views/ActivityCategoriesList.vue'
+import ProfileView from '@/views/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +35,12 @@ const router = createRouter({
           path: 'categories',
           name: 'categories',
           component: ActivityCategoriesListView,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'profile',
+          name: 'profile',
+          component: ProfileView,
           meta: { requiresAuth: true }
         }
       ]

@@ -4,7 +4,7 @@ import { useTelegram } from '@/composables/useTelegram'
 import { useAuthStore } from '@/stores/auth'
 import { computed, watchEffect, onMounted } from 'vue'
 
-const { isReady, user, webApp } = useTelegram()
+const { isReady, user, webApp, hapticFeedback } = useTelegram()
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
@@ -46,6 +46,12 @@ watchEffect(() => {
     })
   }
 })
+
+// Placeholder handler for not-yet-implemented tabs
+const handleComingSoon = (label: string) => {
+  hapticFeedback('impact')
+  alert(`${label} скоро появится`)
+}
 </script>
 
 <template>
@@ -67,7 +73,7 @@ watchEffect(() => {
         class="fixed bottom-0 left-0 right-0 z-50 bg-transparent"
       >
         <div class="flex justify-center px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+12px)]">
-          <div class="w-full max-w-md rounded-full border border-gray-200 bg-white/80 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/60 p-1">
+          <div class="w-full max-w-2xl rounded-full border border-gray-200 bg-white/80 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/60 p-1">
             <div class="flex">
               <RouterLink
                 :to="{ name: 'recent' }"
@@ -84,11 +90,39 @@ watchEffect(() => {
                 <span>Недавнее</span>
               </RouterLink>
 
+              <button
+                type="button"
+                @click="handleComingSoon('Рекорды')"
+                class="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium text-gray-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                style="touch-action: manipulation;"
+                aria-label="Рекорды (скоро)"
+                tabindex="0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                  <path d="M7 21h10M12 17l4-8-4-4-4 4 4 8z" />
+                </svg>
+                <span>Рекорды</span>
+              </button>
+
+              <button
+                type="button"
+                @click="handleComingSoon('Замечания')"
+                class="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium text-gray-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                style="touch-action: manipulation;"
+                aria-label="Замечания (скоро)"
+                tabindex="0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                  <path d="M3 5h18M3 12h18M3 19h18" />
+                </svg>
+                <span>Замечания</span>
+              </button>
+
               <RouterLink
                 :to="{ name: 'categories' }"
                 class="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 :class="route.name === 'categories' ? 'bg-blue-600 text-white shadow' : 'text-gray-700 hover:bg-gray-100'"
-                aria-label="Категории"
+                aria-label="Все упражнения"
                 :aria-current="route.name === 'categories' ? 'page' : undefined"
                 tabindex="0"
               >
@@ -98,7 +132,22 @@ watchEffect(() => {
                   <rect x="4" y="13" width="7" height="7" rx="1.5" />
                   <rect x="13" y="13" width="7" height="7" rx="1.5" />
                 </svg>
-                <span>Категории</span>
+                <span>Все упражнения</span>
+              </RouterLink>
+
+              <RouterLink
+                :to="{ name: 'profile' }"
+                class="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                :class="route.name === 'profile' ? 'bg-blue-600 text-white shadow' : 'text-gray-700 hover:bg-gray-100'"
+                aria-label="Профиль"
+                :aria-current="route.name === 'profile' ? 'page' : undefined"
+                tabindex="0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                  <path d="M20 21a8 8 0 10-16 0" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span>Профиль</span>
               </RouterLink>
             </div>
           </div>
