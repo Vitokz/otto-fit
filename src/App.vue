@@ -77,7 +77,7 @@ const handleComingSoon = (label: string) => {
             <div class="flex">
               <RouterLink
                 :to="{ name: 'recent' }"
-                class="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="flex-1 inline-flex items-center justify-center gap-0 rounded-full py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 :class="route.name === 'recent' ? 'bg-blue-600 text-white shadow' : 'text-gray-700 hover:bg-gray-100'"
                 aria-label="Недавнее"
                 :aria-current="route.name === 'recent' ? 'page' : undefined"
@@ -87,13 +87,12 @@ const handleComingSoon = (label: string) => {
                   <circle cx="12" cy="12" r="9" />
                   <path d="M12 7v5l3 3" />
                 </svg>
-                <span>Недавнее</span>
               </RouterLink>
 
               <button
                 type="button"
                 @click="handleComingSoon('Рекорды')"
-                class="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium text-gray-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="flex-1 inline-flex items-center justify-center gap-0 rounded-full py-2 text-sm font-medium text-gray-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 style="touch-action: manipulation;"
                 aria-label="Рекорды (скоро)"
                 tabindex="0"
@@ -101,13 +100,12 @@ const handleComingSoon = (label: string) => {
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                   <path d="M7 21h10M12 17l4-8-4-4-4 4 4 8z" />
                 </svg>
-                <span>Рекорды</span>
               </button>
 
               <button
                 type="button"
                 @click="handleComingSoon('Замечания')"
-                class="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium text-gray-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="flex-1 inline-flex items-center justify-center gap-0 rounded-full py-2 text-sm font-medium text-gray-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 style="touch-action: manipulation;"
                 aria-label="Замечания (скоро)"
                 tabindex="0"
@@ -115,12 +113,11 @@ const handleComingSoon = (label: string) => {
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                   <path d="M3 5h18M3 12h18M3 19h18" />
                 </svg>
-                <span>Замечания</span>
               </button>
 
               <RouterLink
                 :to="{ name: 'categories' }"
-                class="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="flex-1 inline-flex items-center justify-center gap-0 rounded-full py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 :class="route.name === 'categories' ? 'bg-blue-600 text-white shadow' : 'text-gray-700 hover:bg-gray-100'"
                 aria-label="Все упражнения"
                 :aria-current="route.name === 'categories' ? 'page' : undefined"
@@ -132,12 +129,11 @@ const handleComingSoon = (label: string) => {
                   <rect x="4" y="13" width="7" height="7" rx="1.5" />
                   <rect x="13" y="13" width="7" height="7" rx="1.5" />
                 </svg>
-                <span>Все упражнения</span>
               </RouterLink>
 
               <RouterLink
                 :to="{ name: 'profile' }"
-                class="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="flex-1 inline-flex items-center justify-center gap-0 rounded-full py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 :class="route.name === 'profile' ? 'bg-blue-600 text-white shadow' : 'text-gray-700 hover:bg-gray-100'"
                 aria-label="Профиль"
                 :aria-current="route.name === 'profile' ? 'page' : undefined"
@@ -147,7 +143,6 @@ const handleComingSoon = (label: string) => {
                   <path d="M20 21a8 8 0 10-16 0" />
                   <circle cx="12" cy="7" r="4" />
                 </svg>
-                <span>Профиль</span>
               </RouterLink>
             </div>
           </div>
