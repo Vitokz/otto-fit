@@ -191,3 +191,9 @@ button, [role="button"] {
   border: 0 !important;
   box-shadow: none !important;
 }
+
+/* Force plain white background across all screens (override gradients) */
+.edge-to-edge .tg-screen {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
