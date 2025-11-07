@@ -109,9 +109,55 @@ export type Database = {
           },
         ]
       }
+      exercise_default_records: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          measure_unit_id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          measure_unit_id: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          measure_unit_id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_default_records_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_default_records_measure_unit_id_fkey"
+            columns: ["measure_unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_records: {
         Row: {
           created_at: string
+          default_record_id: string | null
           exercise_id: string
           id: string
           measure_unit_id: string
@@ -124,6 +170,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_record_id?: string | null
           exercise_id: string
           id?: string
           measure_unit_id: string
@@ -136,6 +183,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_record_id?: string | null
           exercise_id?: string
           id?: string
           measure_unit_id?: string
@@ -147,6 +195,13 @@ export type Database = {
           value?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "exercise_records_default_record_id_fkey"
+            columns: ["default_record_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_default_records"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "exercise_records_exercise_id_fkey"
             columns: ["exercise_id"]
@@ -387,18 +442,21 @@ export type Database = {
         Row: {
           created_at: string
           exercise_id: string | null
+          id: string
           updated_at: string
           user_id: number
         }
         Insert: {
           created_at?: string
           exercise_id?: string | null
+          id?: string
           updated_at?: string
           user_id: number
         }
         Update: {
           created_at?: string
           exercise_id?: string | null
+          id?: string
           updated_at?: string
           user_id?: number
         }

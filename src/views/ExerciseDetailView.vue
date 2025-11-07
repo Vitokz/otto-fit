@@ -13,6 +13,20 @@ type ExerciseRecord = Database['public']['Tables']['exercise_records']['Row'] & 
   measurement_units?: { name: string }
 }
 type MeasurementUnit = Database['public']['Tables']['measurement_units']['Row']
+type DefaultExerciseRecord = Database['public']['Tables']['exercise_default_records']['Row'] & {
+  measurement_units?: { name: string }
+}
+type UIRecord = {
+  id: string
+  name: string
+  value: number
+  measurement_units?: { name: string }
+  isPlaceholder?: boolean
+  // present if this UI item corresponds to a real user exercise record
+  record?: ExerciseRecord
+  // link to default record when applicable
+  defaultRecordId?: string | null
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -22,6 +36,7 @@ const { setupBackButton, removeBackButton } = useTelegramBackButton()
 const exercise = ref<Exercise | null>(null)
 const comments = ref<ExerciseComment[]>([])
 const records = ref<ExerciseRecord[]>([])
+const defaultRecords = ref<DefaultExerciseRecord[]>([])
 const measurementUnits = ref<MeasurementUnit[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -69,6 +84,19 @@ const loadExerciseData = async () => {
       measurementUnits.value = unitsData || []
     }
 
+    // Загружаем дефолтные рекорды для упражнения
+    const { data: defaultsData, error: defaultsError } = await supabase
+      .from('exercise_default_records')
+      .select(`*, measurement_units ( name )`)
+      .eq('exercise_id', exerciseId)
+      .order('sort_order', { ascending: true })
+
+    if (defaultsError) {
+      console.error('Error loading default records:', defaultsError)
+    } else {
+      defaultRecords.value = (defaultsData || []) as DefaultExerciseRecord[]
+    }
+
     if (user.value?.id) {
       // Загружаем замечания пользователя для этого упражнения (только активные)
       const { data: commentsData, error: commentsError } = await supabase
@@ -111,6 +139,63 @@ const loadExerciseData = async () => {
     loading.value = false
   }
 }
+
+// Список для UI: дефолтные рекорды первыми, подставляем плейсхолдеры при отсутствии
+const uiRecords = computed<UIRecord[]>(() => {
+  const result: UIRecord[] = []
+  const usedRecordIds = new Set<string>()
+
+  // Картирование пользовательских рекордов по default_record_id и по имени/ед.изм.
+  const byDefaultId = new Map<string, ExerciseRecord>()
+  const byComposite = new Map<string, ExerciseRecord>()
+  for (const r of records.value) {
+    if (r.default_record_id) byDefaultId.set(r.default_record_id, r)
+    const key = `${r.name}|${r.measure_unit_id}`
+    if (!byComposite.has(key)) byComposite.set(key, r)
+  }
+
+  // 1) Дефолтные — первыми
+  for (const d of defaultRecords.value) {
+    const match = byDefaultId.get(d.id) || byComposite.get(`${d.name}|${d.measure_unit_id}`)
+    if (match) {
+      usedRecordIds.add(match.id)
+      result.push({
+        id: match.id,
+        name: match.name,
+        value: match.value,
+        measurement_units: match.measurement_units,
+        isPlaceholder: false,
+        record: match,
+        defaultRecordId: d.id,
+      })
+    } else {
+      result.push({
+        id: `placeholder-${d.id}`,
+        name: d.name,
+        value: 0,
+        measurement_units: d.measurement_units,
+        isPlaceholder: true,
+        defaultRecordId: d.id,
+      })
+    }
+  }
+
+  // 2) Прочие пользовательские рекорды, которые не совпали с дефолтами
+  for (const r of records.value) {
+    if (usedRecordIds.has(r.id)) continue
+    result.push({
+      id: r.id,
+      name: r.name,
+      value: r.value,
+      measurement_units: r.measurement_units,
+      isPlaceholder: false,
+      record: r,
+      defaultRecordId: r.default_record_id ?? null,
+    })
+  }
+
+  return result
+})
 
 const switchTab = (tab: 'comments' | 'records') => {
   hapticFeedback('impact')
@@ -158,6 +243,27 @@ const openAddRecord = () => {
 const openRecordDetail = (record: ExerciseRecord) => {
   hapticFeedback('impact')
   router.push({ name: 'record-detail', params: { recordId: record.id }, query: { from: route.query.from as string | undefined } })
+}
+
+const handleRecordClick = (uiRecord: UIRecord) => {
+  hapticFeedback('impact')
+  if (uiRecord.isPlaceholder) {
+    // Переход на создание рекорда из дефолта
+    if (uiRecord.defaultRecordId) {
+      router.push({ 
+        name: 'add-record-from-default', 
+        params: { exerciseId, defaultId: uiRecord.defaultRecordId },
+        query: { from: route.query.from as string | undefined }
+      })
+      return
+    }
+    openAddRecord()
+    return
+  }
+  if (uiRecord.record) {
+    openRecordDetail(uiRecord.record)
+    return
+  }
 }
 
 
@@ -309,12 +415,12 @@ onUnmounted(() => {
             <!-- Records Tab -->
             <div v-if="activeTab === 'records'" class="flex-1 flex flex-col min-h-0">
               <!-- Records List -->
-              <div v-if="records.length > 0" class="flex-1 p-6 pt-4 overflow-y-auto" style="touch-action: pan-y;">
+              <div v-if="uiRecords.length > 0" class="flex-1 p-6 pt-4 overflow-y-auto" style="touch-action: pan-y;">
                 <div class="space-y-3">
                   <div
-                    v-for="record in records"
+                    v-for="record in uiRecords"
                     :key="record.id"
-                    @click="openRecordDetail(record)"
+                    @click="handleRecordClick(record)"
                     class="bg-gray-50 rounded-2xl p-3 border border-gray-100 h-16 flex items-center justify-between cursor-pointer hover:bg-gray-100 active:scale-95 transition-all duration-200"
                     style="touch-action: manipulation;"
                   >

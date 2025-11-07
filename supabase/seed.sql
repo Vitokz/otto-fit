@@ -166,6 +166,29 @@ VALUES
         12
     );
 
+-- Default records for "Рывок в сед"
+INSERT INTO
+    exercise_default_records (exercise_id, measure_unit_id, name, sort_order)
+VALUES
+    (
+        'e1111111-1111-1111-1111-111111111111',
+        '11111111-1111-1111-1111-111111111111',
+        '1ПМ',
+        1
+    ),
+    (
+        'e1111111-1111-1111-1111-111111111111',
+        '11111111-1111-1111-1111-111111111111',
+        '2ПМ',
+        2
+    ),
+    (
+        'e1111111-1111-1111-1111-111111111111',
+        '11111111-1111-1111-1111-111111111111',
+        '3ПМ',
+        3
+    );
+
 -- Exercises for Классические упражнения
 INSERT INTO
     exercises (id, category_id, name, sort_order)

@@ -8,6 +8,7 @@ import CommentDetailView from '../views/CommentDetailView.vue'
 import RecordDetailView from '../views/RecordDetailView.vue'
 import AddCommentView from '../views/AddCommentView.vue'
 import AddRecordView from '../views/AddRecordView.vue'
+import AddRecordFromDefaultView from '../views/AddRecordFromDefaultView.vue'
 import UserDataForm from '../components/UserDataForm.vue'
 import WelcomeScreen from '../components/WelcomeScreen.vue'
 import ExercisesList from '../components/ExercisesList.vue'
@@ -103,6 +104,12 @@ const router = createRouter({
       path: '/exercise/:exerciseId/add-record',
       name: 'add-record',
       component: AddRecordView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/exercise/:exerciseId/add-record/from-default/:defaultId',
+      name: 'add-record-from-default',
+      component: AddRecordFromDefaultView,
       meta: { requiresAuth: true }
     },
   ],

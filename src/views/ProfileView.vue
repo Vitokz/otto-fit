@@ -2,11 +2,9 @@
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTelegram } from '@/composables/useTelegram'
-import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
-const { user: tgUser, hapticFeedback } = useTelegram()
-const router = useRouter()
+const { user: tgUser } = useTelegram()
 
 const name = computed(() => authStore.profile
   ? `${authStore.profile.first_name} ${authStore.profile.last_name || ''}`.trim()
@@ -14,11 +12,6 @@ const name = computed(() => authStore.profile
 )
 
 const username = computed(() => authStore.profile?.username || tgUser.value?.username || '')
-
-const handleEdit = () => {
-  hapticFeedback('impact')
-  router.push({ name: 'user-data' })
-}
 </script>
 
 <template>
@@ -30,7 +23,7 @@ const handleEdit = () => {
 
       <div class="flex-1 pb-8 flex flex-col min-h-0">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div class="flex items-center gap-4 mb-6">
+          <div class="flex items-center gap-4">
             <div class="w-14 h-14 rounded-full bg-blue-500 text-white flex items-center justify-center text-xl font-bold">
               {{ name ? name[0] : 'U' }}
             </div>
@@ -39,14 +32,6 @@ const handleEdit = () => {
               <p v-if="username" class="text-sm text-gray-500 truncate">@{{ username }}</p>
             </div>
           </div>
-
-          <button
-            @click="handleEdit"
-            class="w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 active:scale-95 transition-all"
-            style="touch-action: manipulation;"
-          >
-            Редактировать данные
-          </button>
         </div>
       </div>
     </div>

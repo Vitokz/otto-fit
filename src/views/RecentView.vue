@@ -123,14 +123,12 @@ onMounted(() => {
           </div>
 
           <!-- Empty -->
-          <div v-else class="flex-1 flex items-center justify-center">
-            <div class="text-center p-6">
-              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span class="text-2xl">🕒</span>
-              </div>
-              <p class="text-gray-500 font-medium mb-2">Пока нет недавних</p>
-              <p class="text-gray-400 text-sm">Когда вы начнёте заниматься, здесь появится список.</p>
+          <div v-else class="flex-1 flex flex-col items-center justify-center p-6">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+              <span class="text-2xl">🕒</span>
             </div>
+            <p class="text-gray-500 font-medium mb-2 text-center">Пока нет недавних</p>
+            <p class="text-gray-400 text-sm text-center">Когда вы начнёте заниматься, здесь появится список.</p>
           </div>
         </div>
       </div>
